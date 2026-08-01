@@ -50,9 +50,13 @@ enum zelda64_result {
     ZELDA64_OK = 0,
     ZELDA64_INVALID_PARAMETER = -1,
     ZELDA64_MEMORY_ERROR = -2,
-    ZELDA64_IO_ERROR = -3,
-    ZELDA64_OUT_OF_RANGE = -4,
+    ZELDA64_OUT_OF_RANGE = -3,
+    ZELDA64_IO_ERROR = -100,
+    ZELDA64_IO_READ_ONLY = -101,
+    ZELDA64_IO_FIXED_SIZE = -102,
 };
+
+#define ZELDA64_IS_IO_ERROR(x) ((x) <= ZELDA64_IO_ERROR)
 
 typedef void* (* zelda64_alloc_func)(void* opaque, size_t size);
 
