@@ -19,8 +19,15 @@ configure_file(
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h
         @ONLY)
 
+set(ZELDA64_PUBLIC_HEADERS
+        include/zelda64/zelda64.h
+        ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h)
+
+set(ZELDA64_SOURCES
+        lib/zelda64.c)
+
 if (ZELDA64_BUILD_SHARED)
-    add_library(zelda64 SHARED lib/zelda64.c)
+    add_library(zelda64 SHARED ${ZELDA64_SOURCES} ${ZELDA64_PUBLIC_HEADERS})
     add_library(zelda64::zelda64 ALIAS zelda64)
 
     target_include_directories(zelda64
@@ -51,7 +58,7 @@ if (ZELDA64_BUILD_SHARED)
 endif ()
 
 if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC)
-    add_library(zelda64_static STATIC lib/zelda64.c)
+    add_library(zelda64_static STATIC ${ZELDA64_SOURCES} ${ZELDA64_PUBLIC_HEADERS})
     add_library(zelda64::zelda64_static ALIAS zelda64_static)
 
     target_include_directories(zelda64_static
