@@ -8,6 +8,9 @@ project(zelda64
 option(ZELDA64_BUILD_APPLICATION "Enable building the zelda64 binary" ${PROJECT_IS_TOP_LEVEL})
 option(ZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
 option(ZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
+option(ZELDA64_USE_LIBC "Enable functions that use the C standard library" ON)
+
+mark_as_advanced(ZELDA64_USE_LIBC)
 
 find_package(yaz0 REQUIRED)
 
