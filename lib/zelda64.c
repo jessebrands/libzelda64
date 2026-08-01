@@ -30,3 +30,37 @@ char const* zelda64_result_string(enum zelda64_result const result) {
     }
     return "unknown";
 }
+
+
+// !! ====================================================================== !!
+//    Functions that require the C standard library go in this block.
+// !! ====================================================================== !!
+#if defined ZELDA64_USE_LIBC
+
+#include <stdlib.h>
+
+/*
+ * Default memory allocation callback.
+ */
+static void* zelda64_malloc(void* opaque, size_t const size) {
+    (void)opaque; // unused parameter
+    return malloc(size);
+}
+
+/*
+ * Default memory release callback.
+ */
+static void zelda64_free(void* opaque, void* ptr) {
+    (void)opaque;
+    free(ptr);
+}
+
+struct zelda64_allocator zelda64_default_allocator(void) {
+    return (struct zelda64_allocator) {
+        .opaque = NULL,
+        .alloc = zelda64_malloc,
+        .free = zelda64_free,
+    };
+}
+
+#endif // defined ZELDA64_USE_LIBC

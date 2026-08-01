@@ -23,6 +23,8 @@
 
 #include "zelda64/config.h"
 
+#include <stddef.h>
+
 #if defined _WIN32 || defined __CYGWIN__
 #  if defined ZELDA64_STATIC
 #    define ZELDA64_API
@@ -41,6 +43,10 @@
 extern "C" {
 #endif
 
+typedef void* (* zelda64_alloc_func)(void* opaque, size_t size);
+
+typedef void (* zelda64_free_func)(void* opaque, void* ptr);
+
 enum zelda64_result {
     ZELDA64_OK = 0,
     ZELDA64_INVALID_PARAMETER = -1,
@@ -49,7 +55,28 @@ enum zelda64_result {
     ZELDA64_OUT_OF_RANGE = -4,
 };
 
+struct zelda64_allocator {
+    void* opaque;
+    zelda64_alloc_func alloc;
+    zelda64_free_func free;
+};
+
 ZELDA64_API char const* zelda64_result_string(enum zelda64_result result);
+
+
+// !! ====================================================================== !!
+//    Functions that require the C standard library go in this block.
+// !! ====================================================================== !!
+#if defined ZELDA64_USE_LIBC
+
+/*
+ * Creates an allocator that uses malloc/free.
+ */
+ZELDA64_API struct zelda64_allocator zelda64_default_allocator(void);
+
+#endif // defined ZELDA64_USE_LIBC
+
+
 
 #if defined __cplusplus
 }
