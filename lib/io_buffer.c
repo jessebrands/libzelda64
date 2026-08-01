@@ -32,7 +32,7 @@ struct zelda64_io_buffer {
 static void zelda64_io_close_buffer(void* opaque) {
     struct zelda64_io_buffer const* buffer = opaque;
     if (buffer->data != NULL) {
-        zelda64_free(&buffer->state.allocator, buffer->data);
+        zelda64_free(buffer->state.allocator, buffer->data);
     }
 }
 
@@ -74,7 +74,6 @@ zelda64_io_buffer_size(void* opaque, size_t* size) {
 static enum zelda64_result
 zelda64_io_buffer_resize(void* opaque, size_t const size) {
     struct zelda64_io_buffer* buffer = opaque;
-    struct zelda64_allocator* allocator = &buffer->state.allocator;
     if (size == buffer->size) {
         return ZELDA64_OK;
     }
@@ -90,7 +89,7 @@ zelda64_io_buffer_resize(void* opaque, size_t const size) {
     // Attempt the resize first, don't corrupt the buffer if we fail.
     uint8_t* old_buffer = buffer->data;
     size_t const old_size = size < buffer->size ? size : buffer->size;
-    uint8_t* new_buffer = zelda64_alloc(allocator, size);
+    uint8_t* new_buffer = zelda64_alloc(buffer->state.allocator, size);
 
     if (new_buffer == NULL) {
         return ZELDA64_MEMORY_ERROR;
@@ -106,7 +105,7 @@ zelda64_io_buffer_resize(void* opaque, size_t const size) {
     }
 
     if (buffer->data != NULL) {
-        zelda64_free(allocator, old_buffer);
+        zelda64_free(buffer->state.allocator, old_buffer);
     }
 
     buffer->data = new_buffer;
@@ -116,11 +115,11 @@ zelda64_io_buffer_resize(void* opaque, size_t const size) {
 
 enum zelda64_result
 zelda64_io_create_buffer(struct zelda64_io* io, size_t const size, struct zelda64_allocator const allocator) {
-    if (!zelda64_allocator_valid(&allocator) || io == NULL) {
+    if (!zelda64_allocator_valid(allocator) || io == NULL) {
         return ZELDA64_INVALID_PARAMETER;
     }
 
-    struct zelda64_io_buffer* buffer = zelda64_alloc(&allocator, sizeof(*buffer));
+    struct zelda64_io_buffer* buffer = zelda64_alloc(allocator, sizeof(*buffer));
     if (buffer == NULL) {
         return ZELDA64_MEMORY_ERROR;
     }
@@ -128,9 +127,9 @@ zelda64_io_create_buffer(struct zelda64_io* io, size_t const size, struct zelda6
     // Do not reject size == 0, `io_buffer` acts like a file so zero length
     // files need to be representable and this is how we do that.
     if (size > 0) {
-        buffer->data = zelda64_alloc(&allocator, size);
+        buffer->data = zelda64_alloc(allocator, size);
         if (buffer->data == NULL) {
-            zelda64_free(&allocator, buffer);
+            zelda64_free(allocator, buffer);
             return ZELDA64_MEMORY_ERROR;
         }
         memset(buffer->data, 0, size);
@@ -156,11 +155,11 @@ zelda64_io_create_buffer(struct zelda64_io* io, size_t const size, struct zelda6
 enum zelda64_result
 zelda64_io_from_buffer(struct zelda64_io* io, uint8_t* data, size_t const size,
                        struct zelda64_allocator const allocator) {
-    if (!zelda64_allocator_valid(&allocator) || io == NULL || (data == NULL && size > 0)) {
+    if (!zelda64_allocator_valid(allocator) || io == NULL || (data == NULL && size > 0)) {
         return ZELDA64_INVALID_PARAMETER;
     }
 
-    struct zelda64_io_buffer* buffer = zelda64_alloc(&allocator, sizeof(*buffer));
+    struct zelda64_io_buffer* buffer = zelda64_alloc(allocator, sizeof(*buffer));
     if (buffer == NULL) {
         return ZELDA64_MEMORY_ERROR;
     }
@@ -184,11 +183,11 @@ zelda64_io_from_buffer(struct zelda64_io* io, uint8_t* data, size_t const size,
 enum zelda64_result
 zelda64_io_from_const_buffer(struct zelda64_io* io, uint8_t const* data, size_t const size,
                              struct zelda64_allocator const allocator) {
-    if (!zelda64_allocator_valid(&allocator) || io == NULL || (data == NULL && size > 0)) {
+    if (!zelda64_allocator_valid(allocator) || io == NULL || (data == NULL && size > 0)) {
         return ZELDA64_INVALID_PARAMETER;
     }
 
-    struct zelda64_io_buffer* buffer = zelda64_alloc(&allocator, sizeof(*buffer));
+    struct zelda64_io_buffer* buffer = zelda64_alloc(allocator, sizeof(*buffer));
     if (buffer == NULL) {
         return ZELDA64_MEMORY_ERROR;
     }

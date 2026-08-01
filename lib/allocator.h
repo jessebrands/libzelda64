@@ -26,18 +26,18 @@
 #include "zelda64/zelda64.h"
 
 static inline void*
-zelda64_alloc(struct zelda64_allocator const* allocator, size_t size) {
-    return allocator->alloc(allocator->opaque, size);
+zelda64_alloc(struct zelda64_allocator const allocator, size_t size) {
+    return allocator.alloc(allocator.opaque, size);
 }
 
 static inline void
-zelda64_free(struct zelda64_allocator const* allocator, void* ptr) {
-    allocator->free(allocator->opaque, ptr);
+zelda64_free(struct zelda64_allocator const allocator, void* ptr) {
+    allocator.free(allocator.opaque, ptr);
 }
 
 static inline bool
-zelda64_allocator_valid(struct zelda64_allocator const* allocator) {
-    return allocator->alloc != NULL && allocator->free != NULL;
+zelda64_allocator_valid(struct zelda64_allocator const allocator) {
+    return allocator.alloc != NULL && allocator.free != NULL;
 }
 
 #endif //ZELDA64_ALLOCATOR_H
