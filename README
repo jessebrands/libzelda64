@@ -1,0 +1,37 @@
+
+                  zelda64 -- Nintendo 64 Zelda ROM utilities
+
+Purpose
+
+    zelda64 is a library and program for compressing, decompressing, extracting
+    and manipulating Nintendo 64 Zelda ROMs.
+
+Origin
+
+    The zelda64 project was started in 2026 to create a modern and well-tested
+    ROM compressor and decompressor for the Ocarina of Time Randomizer. The
+    project also serves as the main consumer of libyaz0 which is used for the
+    compression and decompression of ROMs.
+
+License
+
+    zelda64's code and documentation are covered by version 3 of the GNU
+    General Public License or, at your option, any later version. See the file
+    COPYING for the full text of this license.
+
+    libzelda64's code and documentation are covered by version 3 of the GNU
+    Lesser General Public License or, at your option, any later version. See
+    the files COPYING and COPYING.LESSER for the full text of this license.
+
+Compiling
+
+    Download the latest source tarball, and then:
+
+        tar -xvf zelda64-x.y.z.tar.gz
+        cmake -DCMAKE_BUILD_TYPE=Release      \
+            -S ./zelda64-x.y.z                \
+            -B /path/to/build-dir
+        cmake --build /path/to/build-dir
+
+    You will need CMake 3.21 or later, as well as a C compiler that supports
+    the C99 standard.
