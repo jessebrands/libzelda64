@@ -30,6 +30,12 @@ if (ZELDA64_BUILD_SHARED)
             C_EXTENSIONS OFF
             VERSION ${PROJECT_VERSION}
             SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+
+    if (MSVC)
+        target_compile_options(zelda64 PRIVATE /W4)
+    else ()
+        target_compile_options(zelda64 PRIVATE -Wall -Wextra -Wconversion)
+    endif ()
 endif ()
 
 if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC)
@@ -51,6 +57,12 @@ if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC)
             C_EXTENSIONS OFF
             VERSION ${PROJECT_VERSION}
             SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+
+    if (MSVC)
+        target_compile_options(zelda64_static PRIVATE /W4)
+    else ()
+        target_compile_options(zelda64_static PRIVATE -Wall -Wextra -Wconversion)
+    endif ()
 endif ()
 
 if (ZELDA64_BUILD_APPLICATION)
