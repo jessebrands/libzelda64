@@ -18,14 +18,9 @@
  * along with libzelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "allocator.h"
-
-// !! ====================================================================== !!
-//    Functions that require the C standard library go in this block.
-// !! ====================================================================== !!
-#if defined ZELDA64_USE_LIBC
-
 #include <stdlib.h>
+
+#include "allocator.h"
 
 /*
  * Default memory allocation callback.
@@ -53,5 +48,3 @@ struct zelda64_allocator zelda64_default_allocator(void) {
         .free = zelda64_std_free,
     };
 }
-
-#endif // defined ZELDA64_USE_LIBC
