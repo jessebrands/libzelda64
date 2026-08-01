@@ -54,9 +54,7 @@ if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC)
             DEBUG_POSTFIX "d"
             C_STANDARD 99
             C_STANDARD_REQUIRED ON
-            C_EXTENSIONS OFF
-            VERSION ${PROJECT_VERSION}
-            SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+            C_EXTENSIONS OFF)
 
     if (MSVC)
         target_compile_options(zelda64_static PRIVATE /W4)
