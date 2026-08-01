@@ -11,12 +11,18 @@ option(ZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
 
 find_package(yaz0 REQUIRED)
 
+configure_file(
+        include/zelda64/config.h.in
+        ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h
+        @ONLY)
+
 if (ZELDA64_BUILD_SHARED)
     add_library(zelda64 SHARED lib/zelda64.c)
     add_library(zelda64::zelda64 ALIAS zelda64)
 
     target_include_directories(zelda64
             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
             PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
     target_link_libraries(zelda64
@@ -47,6 +53,7 @@ if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC)
 
     target_include_directories(zelda64_static
             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
             PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
     target_link_libraries(zelda64_static

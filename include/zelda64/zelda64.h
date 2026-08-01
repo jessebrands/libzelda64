@@ -21,6 +21,8 @@
 #ifndef ZELDA64_ZELDA64_H
 #define ZELDA64_ZELDA64_H
 
+#include "zelda64/config.h"
+
 #if defined _WIN32 || defined __CYGWIN__
 #  if defined ZELDA64_STATIC
 #    define ZELDA64_API
