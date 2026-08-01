@@ -45,8 +45,7 @@ if (ZELDA64_BUILD_SHARED)
 
     target_include_directories(zelda64
             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-            PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib")
+            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
     target_link_libraries(zelda64
             PRIVATE yaz0::yaz0)
@@ -84,8 +83,7 @@ if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC)
 
     target_include_directories(zelda64_static
             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-            PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib")
+            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
     target_link_libraries(zelda64_static
             PRIVATE yaz0::yaz0_static)
