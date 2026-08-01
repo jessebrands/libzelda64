@@ -1,5 +1,5 @@
 /*
- * zelda64.c: Nintendo 64 Zelda ROM manipulation common functions
+ * allocator.h: memory allocator
  * Copyright (C) 2026 Jesse Gerard Brands
  *
  * This file is part of libzelda64.
@@ -18,15 +18,26 @@
  * along with libzelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef ZELDA64_ALLOCATOR_H
+#define ZELDA64_ALLOCATOR_H
+
+#include <stdbool.h>
+
 #include "zelda64/zelda64.h"
 
-char const* zelda64_result_string(enum zelda64_result const result) {
-    switch (result) {
-        case ZELDA64_OK: return "ok";
-        case ZELDA64_INVALID_PARAMETER: return "invalid parameter";
-        case ZELDA64_MEMORY_ERROR: return "memory error";
-        case ZELDA64_IO_ERROR: return "i/o error";
-        case ZELDA64_OUT_OF_RANGE: return "out of range";
-    }
-    return "unknown";
+static inline void*
+zelda64_alloc(struct zelda64_allocator const* allocator, size_t size) {
+    return allocator->alloc(allocator->opaque, size);
 }
+
+static inline void
+zelda64_free(struct zelda64_allocator const* allocator, void* ptr) {
+    allocator->free(allocator->opaque, ptr);
+}
+
+static inline bool
+zelda64_allocator_valid(struct zelda64_allocator const* allocator) {
+    return allocator->alloc != NULL && allocator->free != NULL;
+}
+
+#endif //ZELDA64_ALLOCATOR_H

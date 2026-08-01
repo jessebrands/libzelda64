@@ -77,7 +77,6 @@ ZELDA64_API struct zelda64_allocator zelda64_default_allocator(void);
 #endif // defined ZELDA64_USE_LIBC
 
 
-
 #if defined __cplusplus
 }
 #endif
