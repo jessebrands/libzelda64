@@ -37,4 +37,22 @@
 #  define ZELDA64_API
 #endif
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
+enum zelda64_result {
+    ZELDA64_OK = 0,
+    ZELDA64_INVALID_PARAMETER = -1,
+    ZELDA64_MEMORY_ERROR = -2,
+    ZELDA64_IO_ERROR = -3,
+    ZELDA64_OUT_OF_RANGE = -4,
+};
+
+ZELDA64_API char const* zelda64_result_string(enum zelda64_result result);
+
+#if defined __cplusplus
+}
+#endif
+
 #endif //ZELDA64_ZELDA64_H

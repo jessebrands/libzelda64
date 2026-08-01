@@ -19,3 +19,14 @@
  */
 
 #include "zelda64/zelda64.h"
+
+char const* zelda64_result_string(enum zelda64_result const result) {
+    switch (result) {
+        case ZELDA64_OK: return "ok";
+        case ZELDA64_INVALID_PARAMETER: return "invalid parameter";
+        case ZELDA64_MEMORY_ERROR: return "memory error";
+        case ZELDA64_IO_ERROR: return "i/o error";
+        case ZELDA64_OUT_OF_RANGE: return "out of range";
+    }
+    return "unknown";
+}
