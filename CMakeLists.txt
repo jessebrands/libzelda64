@@ -20,7 +20,7 @@ if (ZELDA64_BUILD_SHARED)
             PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
     target_link_libraries(zelda64
-            PUBLIC yaz0::yaz0)
+            PRIVATE yaz0::yaz0)
 
     set_target_properties(zelda64 PROPERTIES
             OUTPUT_NAME "zelda64"
@@ -47,7 +47,7 @@ if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC)
             PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
     target_link_libraries(zelda64_static
-            PUBLIC yaz0::yaz0_static)
+            PRIVATE yaz0::yaz0_static)
 
     set_target_properties(zelda64_static PROPERTIES
             OUTPUT_NAME "zelda64s"
