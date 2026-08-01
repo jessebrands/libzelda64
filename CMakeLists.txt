@@ -53,7 +53,11 @@ if (ZELDA64_BUILD_SHARED)
     if (MSVC)
         target_compile_options(zelda64 PRIVATE /W4)
     else ()
-        target_compile_options(zelda64 PRIVATE -Wall -Wextra -Wconversion)
+        target_compile_options(zelda64
+                PRIVATE -Wall -Wextra
+                PRIVATE -Wconversion
+                PRIVATE -Wstrict-prototypes
+                PRIVATE -Wold-style-definition)
     endif ()
 endif ()
 
@@ -81,7 +85,11 @@ if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC)
     if (MSVC)
         target_compile_options(zelda64_static PRIVATE /W4)
     else ()
-        target_compile_options(zelda64_static PRIVATE -Wall -Wextra -Wconversion)
+        target_compile_options(zelda64_static
+                PRIVATE -Wall -Wextra
+                PRIVATE -Wconversion
+                PRIVATE -Wstrict-prototypes
+                PRIVATE -Wold-style-definition)
     endif ()
 endif ()
 
@@ -99,6 +107,10 @@ if (ZELDA64_BUILD_APPLICATION)
     if (MSVC)
         target_compile_options(zelda64_bin PRIVATE /W4)
     else ()
-        target_compile_options(zelda64_bin PRIVATE -Wall -Wextra -Wconversion)
+        target_compile_options(zelda64_bin
+                PRIVATE -Wall -Wextra
+                PRIVATE -Wconversion
+                PRIVATE -Wstrict-prototypes
+                PRIVATE -Wold-style-definition)
     endif ()
 endif ()
