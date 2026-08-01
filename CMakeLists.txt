@@ -24,12 +24,15 @@ set(ZELDA64_PUBLIC_HEADERS
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h)
 
 set(ZELDA64_PRIVATE_HEADERS
-        lib/crc32.h)
         lib/allocator.c
+        lib/crc32.h
+        lib/io.h)
 
 set(ZELDA64_SOURCES
         lib/allocator.h
         lib/crc32.c
+        lib/io.c
+        lib/io_buffer.c
         lib/zelda64.c)
 
 if (ZELDA64_BUILD_SHARED)

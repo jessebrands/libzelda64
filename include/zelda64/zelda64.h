@@ -21,9 +21,10 @@
 #ifndef ZELDA64_ZELDA64_H
 #define ZELDA64_ZELDA64_H
 
-#include "zelda64/config.h"
-
 #include <stddef.h>
+#include <stdint.h>
+
+#include "zelda64/config.h"
 
 #if defined _WIN32 || defined __CYGWIN__
 #  if defined ZELDA64_STATIC
@@ -41,11 +42,9 @@
 
 #if defined __cplusplus
 extern "C" {
+
+
 #endif
-
-typedef void* (* zelda64_alloc_func)(void* opaque, size_t size);
-
-typedef void (* zelda64_free_func)(void* opaque, void* ptr);
 
 enum zelda64_result {
     ZELDA64_OK = 0,
@@ -55,13 +54,64 @@ enum zelda64_result {
     ZELDA64_OUT_OF_RANGE = -4,
 };
 
+typedef void* (* zelda64_alloc_func)(void* opaque, size_t size);
+
+typedef void (* zelda64_free_func)(void* opaque, void* ptr);
+
+typedef enum zelda64_result (* zelda64_io_read_func)(void* opaque, size_t offset, uint8_t* dst, size_t size);
+
+typedef enum zelda64_result (* zelda64_io_write_func)(void* opaque, size_t offset, uint8_t const* src, size_t size);
+
+typedef enum zelda64_result (* zelda64_io_size_func)(void* opaque, size_t* size);
+
+typedef enum zelda64_result (* zelda64_io_resize_func)(void* opaque, size_t size);
+
 struct zelda64_allocator {
     void* opaque;
     zelda64_alloc_func alloc;
     zelda64_free_func free;
 };
 
+struct zelda64_io {
+    zelda64_io_read_func read;
+    zelda64_io_write_func write;
+    zelda64_io_size_func size;
+    zelda64_io_resize_func resize;
+    void* opaque;
+};
+
 ZELDA64_API char const* zelda64_result_string(enum zelda64_result result);
+
+/*
+ * Creates an in-memory read/write file and allocates a buffer for it.
+ */
+ZELDA64_API enum zelda64_result
+zelda64_io_create_buffer(struct zelda64_io* io,
+                         size_t size,
+                         struct zelda64_allocator allocator);
+
+/*
+ * Creates an in-memory read/write file from a buffer.
+ */
+ZELDA64_API enum zelda64_result
+zelda64_io_from_buffer(struct zelda64_io* io,
+                       uint8_t* data,
+                       size_t size,
+                       struct zelda64_allocator allocator);
+
+/*
+ * Creates an in-memory read-only file from a buffer.
+ */
+ZELDA64_API enum zelda64_result
+zelda64_io_from_const_buffer(struct zelda64_io* io,
+                             uint8_t const* data,
+                             size_t size,
+                             struct zelda64_allocator allocator);
+
+/*
+ * Closes an zelda64_io file, releasing its resources.
+ */
+ZELDA64_API void zelda64_io_close(struct zelda64_io* io);
 
 
 // !! ====================================================================== !!
