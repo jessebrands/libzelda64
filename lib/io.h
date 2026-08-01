@@ -33,12 +33,6 @@ struct zelda64_io_state {
     zelda64_io_destroy_func close;
 };
 
-struct zelda64_io_buffer {
-    struct zelda64_io_state state;
-    uint8_t* data;
-    size_t size;
-};
-
 static inline enum zelda64_result
 zelda64_io_read(struct zelda64_io const* io, size_t const offset, uint8_t* dst, size_t const size) {
     if (io == NULL || (dst == NULL && size > 0)) {

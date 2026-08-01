@@ -23,6 +23,12 @@
 #include "allocator.h"
 #include "io.h"
 
+struct zelda64_io_buffer {
+    struct zelda64_io_state state;
+    uint8_t* data;
+    size_t size;
+};
+
 static void zelda64_io_close_buffer(void* opaque) {
     struct zelda64_io_buffer const* buffer = opaque;
     if (buffer->data != NULL) {
