@@ -33,5 +33,5 @@ Compiling
             -B /path/to/build-dir
         cmake --build /path/to/build-dir
 
-    You will need CMake 3.21 or later, as well as a C compiler that supports
-    the C99 standard.
+    You will need CMake 3.21 or later, a C compiler that supports the C99
+    standard, and libyaz0 version 0.1.
