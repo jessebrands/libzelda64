@@ -22,12 +22,15 @@ if (ZELDA64_BUILD_SHARED)
     target_link_libraries(zelda64
             PRIVATE yaz0::yaz0)
 
+    target_compile_definitions(zelda64 PRIVATE ZELDA64_SHARED)
+
     set_target_properties(zelda64 PROPERTIES
             OUTPUT_NAME "zelda64"
             DEBUG_POSTFIX "d"
             C_STANDARD 99
             C_STANDARD_REQUIRED ON
             C_EXTENSIONS OFF
+            C_VISIBILITY_PRESET hidden
             VERSION ${PROJECT_VERSION}
             SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 
@@ -48,6 +51,8 @@ if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC)
 
     target_link_libraries(zelda64_static
             PRIVATE yaz0::yaz0_static)
+
+    target_compile_definitions(zelda64_static PUBLIC ZELDA64_STATIC)
 
     set_target_properties(zelda64_static PROPERTIES
             OUTPUT_NAME "zelda64s"
