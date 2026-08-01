@@ -21,7 +21,6 @@
 #ifndef ZELDA64_IO_H
 #define ZELDA64_IO_H
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -39,5 +38,51 @@ struct zelda64_io_buffer {
     uint8_t* data;
     size_t size;
 };
+
+static inline enum zelda64_result
+zelda64_io_read(struct zelda64_io const* io, size_t const offset, uint8_t* dst, size_t const size) {
+    if (io == NULL || (dst == NULL && size > 0)) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    if (io->read == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    return io->read(io->opaque, offset, dst, size);
+}
+
+static inline enum zelda64_result
+zelda64_io_write(struct zelda64_io* io, size_t const offset, uint8_t const* src, size_t const size) {
+    if (io == NULL || (src == NULL && size > 0)) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    if (io->write == NULL) {
+        return ZELDA64_IO_READ_ONLY;
+    }
+    return io->write(io->opaque, offset, src, size);
+}
+
+static inline enum zelda64_result
+zelda64_io_size(struct zelda64_io const* io, size_t* size) {
+    if (io == NULL || size == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    if (io->size == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    return io->size(io->opaque, size);
+}
+
+static inline enum zelda64_result
+zelda64_io_resize(struct zelda64_io* io, size_t size) {
+    if (io == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    if (io->resize == NULL) {
+        return io->write != NULL
+        ? ZELDA64_IO_FIXED_SIZE
+        : ZELDA64_IO_READ_ONLY;
+    }
+    return io->resize(io->opaque, size);
+}
 
 #endif //ZELDA64_IO_H
