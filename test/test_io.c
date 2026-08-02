@@ -153,7 +153,12 @@ static void test_file(struct zelda64_allocator const allocator) {
 
     check("open_readonly on missing file",
           zelda64_io_open_readonly(&io, "does_not_exist.z64", allocator), ZELDA64_IO_ERROR);
+
+#if defined _WIN32
+    // POSIX filepaths are just byte streams so this test makes no sense on POSIX.
     check("open with invalid utf-8", zelda64_io_open(&io, "\xFF\xFE.z64", allocator), ZELDA64_INVALID_PARAMETER);
+#endif
+
     check("open with NULL path", zelda64_io_open(&io, NULL, allocator), ZELDA64_INVALID_PARAMETER);
 
     // remove() takes a narrow path, which on Windows is interpreted as ANSI so
