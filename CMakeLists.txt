@@ -122,8 +122,10 @@ if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC OR ZELDA64_BUILD_TESTS)
     endif ()
 endif ()
 
-if (ZELDA64_BUILD_APPLICATION)
-    add_executable(zelda64_bin src/main.c)
+if (ZELDA64_BUILD_APPLICATION AND ZELDA64_USE_LIBC)
+    add_executable(zelda64_bin
+            src/main.c)
+
     target_include_directories(zelda64_bin PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
     set_target_properties(zelda64_bin PROPERTIES
             OUTPUT_NAME "zelda64"
