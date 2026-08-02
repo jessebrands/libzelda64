@@ -37,6 +37,10 @@ set(ZELDA64_SOURCES
 if (ZELDA64_USE_LIBC)
     list(APPEND ZELDA64_SOURCES
             lib/allocator.c)
+
+    if (WIN32)
+        list(APPEND ZELDA64_SOURCES lib/io_file_win32.c)
+    endif ()
 endif ()
 
 if (ZELDA64_BUILD_SHARED)
