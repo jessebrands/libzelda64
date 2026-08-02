@@ -8,6 +8,7 @@ project(zelda64
 option(ZELDA64_BUILD_APPLICATION "Enable building the zelda64 binary" ${PROJECT_IS_TOP_LEVEL})
 option(ZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
 option(ZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
+option(ZELDA64_BUILD_TESTS "Enable building the testing suite" ${PROJECT_IS_TOP_LEVEL})
 option(ZELDA64_USE_LIBC "Enable functions that use the C standard library" ON)
 
 mark_as_advanced(ZELDA64_USE_LIBC)
@@ -81,7 +82,7 @@ if (ZELDA64_BUILD_SHARED)
     endif ()
 endif ()
 
-if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC)
+if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC OR ZELDA64_BUILD_TESTS)
     add_library(zelda64_static STATIC
             ${ZELDA64_SOURCES}
             ${ZELDA64_PUBLIC_HEADERS}
@@ -136,4 +137,9 @@ if (ZELDA64_BUILD_APPLICATION)
                 PRIVATE -Wstrict-prototypes
                 PRIVATE -Wold-style-definition)
     endif ()
+endif ()
+
+if (ZELDA64_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory("test")
 endif ()
