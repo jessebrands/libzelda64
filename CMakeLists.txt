@@ -83,6 +83,7 @@ if (ZELDA64_BUILD_SHARED)
                 PRIVATE -Wall -Wextra
                 PRIVATE -Wconversion
                 PRIVATE -Wstrict-prototypes
+                PRIVATE -Wmissing-prototypes
                 PRIVATE -Wold-style-definition)
     endif ()
 endif ()
@@ -118,6 +119,7 @@ if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC OR ZELDA64_BUILD_TESTS)
                 PRIVATE -Wall -Wextra
                 PRIVATE -Wconversion
                 PRIVATE -Wstrict-prototypes
+                PRIVATE -Wmissing-prototypes
                 PRIVATE -Wold-style-definition)
     endif ()
 endif ()
@@ -160,6 +162,7 @@ if (ZELDA64_BUILD_APPLICATION AND ZELDA64_USE_LIBC)
                 PRIVATE -Wall -Wextra
                 PRIVATE -Wconversion
                 PRIVATE -Wstrict-prototypes
+                PRIVATE -Wmissing-prototypes
                 PRIVATE -Wold-style-definition)
     endif ()
 endif ()
