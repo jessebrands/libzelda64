@@ -54,6 +54,12 @@ enum zelda64_result {
     ZELDA64_IO_FIXED_SIZE = -102,
 };
 
+enum zelda64_compression_level {
+    ZELDA64_DEFAULT_COMPRESSION = -1,
+    ZELDA64_NO_COMPRESSION = 0,
+    ZELDA64_BEST_COMPRESSION = 9,
+};
+
 #define ZELDA64_IS_IO_ERROR(x) ((x) <= ZELDA64_IO_ERROR)
 
 typedef void* (* zelda64_alloc_func)(void* opaque, size_t size);
