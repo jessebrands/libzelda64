@@ -80,6 +80,6 @@ zelda64_write_error(FILE* stream, char const* program,
                     struct zelda64_options const* options);
 
 void
-zelda64_write_usage(FILE* stream);
+zelda64_write_usage(FILE* stream, char const* program);
 
 #endif //ZELDA64_OPTIONS_H

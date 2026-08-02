@@ -345,8 +345,8 @@ write_option(FILE* stream, struct zelda64_option const* opt) {
     fprintf(stream, "  %-20s %s\n", left, opt->description);
 }
 
-void zelda64_write_usage(FILE* stream) {
-    fprintf(stream, "usage: zelda64 mode [options...] rom [out]\n\n");
+void zelda64_write_usage(FILE* stream, char const* program) {
+    fprintf(stream, "usage: %s mode [options...] rom [out]\n\n", program);
 
     fprintf(stream, "Operation mode:\n");
     for (size_t i = 0; i < OPTIONS_COUNT; ++i) {

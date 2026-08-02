@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "zelda64_config.h"
 #include "options.h"
 
 #define EXIT_USAGE 2
@@ -28,8 +29,9 @@
 static void
 write_version(FILE* stream) {
     fprintf(stream,
-            "zelda64 %s\n"
+            "%s %s\n"
             "Copyright (C) 2026  Jesse Gerard Brands\n",
+            ZELDA64_PROGRAM_NAME,
             ZELDA64_VERSION_STRING);
 
     // Print the GPL disclaimer too
@@ -44,8 +46,7 @@ int main(int argc, char** argv) {
 
     switch (status) {
         case ZELDA64_PARSE_HELP:
-            zelda64_write_usage(stdout);
-            return EXIT_USAGE;
+            zelda64_write_usage(stdout, ZELDA64_PROGRAM_NAME);
             return EXIT_SUCCESS;
 
         case ZELDA64_PARSE_VERSION:
@@ -53,8 +54,7 @@ int main(int argc, char** argv) {
             return EXIT_SUCCESS;
 
         case ZELDA64_PARSE_ERROR:
-            zelda64_write_error(stderr, "zelda64", &options);
-            return EXIT_FAILURE;
+            zelda64_write_error(stderr, ZELDA64_PROGRAM_NAME, &options);
             return EXIT_USAGE;
 
         case ZELDA64_PARSE_OK:

@@ -130,13 +130,23 @@ set(ZELDA64_BIN_SOURCES
         src/options.c)
 
 if (ZELDA64_BUILD_APPLICATION AND ZELDA64_USE_LIBC)
+    set(ZELDA64_PROGRAM_NAME "zelda64")
+
+    configure_file(
+            src/zelda64_config.h.in
+            ${CMAKE_CURRENT_BINARY_DIR}/src/zelda64_config.h
+            @ONLY)
+
     add_executable(zelda64_bin
             ${ZELDA64_BIN_SOURCES}
             ${ZELDA64_BIN_HEADERS})
 
-    target_include_directories(zelda64_bin PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_include_directories(zelda64_bin
+            PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+            PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/src")
+
     set_target_properties(zelda64_bin PROPERTIES
-            OUTPUT_NAME "zelda64"
+            OUTPUT_NAME "${ZELDA64_PROGRAM_NAME}"
             C_STANDARD 99
             C_STANDARD_REQUIRED ON
             C_EXTENSIONS OFF)
