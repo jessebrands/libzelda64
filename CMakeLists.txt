@@ -40,7 +40,7 @@ if (ZELDA64_USE_LIBC)
         list(APPEND ZELDA64_SOURCES lib/io_file_posix.c)
     else ()
         message(WARNING "No I/O and allocator implementation for this platform, turning ZELDA64_USE_LIBC off.")
-        set (ZELDA64_USE_LIBC OFF)
+        set(ZELDA64_USE_LIBC OFF)
     endif ()
 endif ()
 
