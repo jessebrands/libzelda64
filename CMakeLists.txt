@@ -15,11 +15,6 @@ mark_as_advanced(ZELDA64_USE_LIBC)
 
 find_package(yaz0 REQUIRED)
 
-configure_file(
-        include/zelda64/config.h.in
-        ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h
-        @ONLY)
-
 set(ZELDA64_PUBLIC_HEADERS
         include/zelda64/zelda64.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h)
@@ -48,6 +43,11 @@ if (ZELDA64_USE_LIBC)
         set (ZELDA64_USE_LIBC OFF)
     endif ()
 endif ()
+
+configure_file(
+        include/zelda64/config.h.in
+        ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h
+        @ONLY)
 
 if (ZELDA64_BUILD_SHARED)
     add_library(zelda64 SHARED
