@@ -133,7 +133,7 @@ zelda64_cic_name(enum zelda64_cic const cic) {
         case ZELDA64_CIC_6101: return "CIC-NUS-6101";
         case ZELDA64_CIC_6102: return "CIC-NUS-6102/7101";
         case ZELDA64_CIC_6103: return "CIC-NUS-6103/7103";
-        case ZELDA64_CIC_6105: return "CIC-NUS-6105";
+        case ZELDA64_CIC_6105: return "CIC-NUS-6105/7105";
         case ZELDA64_CIC_6106: return "CIC-NUS-6106/7106";
     }
     return "unknown";
