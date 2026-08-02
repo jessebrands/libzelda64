@@ -41,6 +41,9 @@ if (ZELDA64_USE_LIBC)
 
     if (WIN32)
         list(APPEND ZELDA64_SOURCES lib/io_file_win32.c)
+    else ()
+        message(WARNING "No I/O and allocator implementation for this platform, turning ZELDA64_USE_LIBC off.")
+        set (ZELDA64_USE_LIBC OFF)
     endif ()
 endif ()
 
