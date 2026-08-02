@@ -42,8 +42,6 @@
 
 #if defined __cplusplus
 extern "C" {
-
-
 #endif
 
 enum zelda64_result {
@@ -127,6 +125,22 @@ ZELDA64_API void zelda64_io_close(struct zelda64_io* io);
  * Creates an allocator that uses malloc/free.
  */
 ZELDA64_API struct zelda64_allocator zelda64_default_allocator(void);
+
+/*
+ * Opens a file for reading and writing.
+ */
+ZELDA64_API enum zelda64_result
+zelda64_io_open(struct zelda64_io* io,
+                char const* filename,
+                struct zelda64_allocator allocator);
+
+/*
+ * Opens a file for reading only.
+ */
+ZELDA64_API enum zelda64_result
+zelda64_io_open_readonly(struct zelda64_io* io,
+                         char const* filename,
+                         struct zelda64_allocator allocator);
 
 #endif // defined ZELDA64_USE_LIBC
 
