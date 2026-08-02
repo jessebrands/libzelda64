@@ -26,6 +26,17 @@
 
 #include "zelda64/zelda64.h"
 
+static inline uint32_t
+zelda64_read_u32(uint8_t const* p) {
+    return (uint32_t) p[0] << 24 | (uint32_t) p[1] << 16
+         | (uint32_t) p[2] << 8  | (uint32_t) p[3];
+}
+
+static inline uint64_t
+zelda64_read_u64(uint8_t const* p) {
+    return (uint64_t) zelda64_read_u32(p) << 32 | zelda64_read_u32(&p[4]);
+}
+
 typedef void (*zelda64_io_destroy_func) (void* opaque);
 
 struct zelda64_io_state {
