@@ -18,10 +18,48 @@
  * zelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 
-#include "zelda64/zelda64.h"
+#include "options.h"
 
-int main(void) {
+#define EXIT_USAGE 2
+
+static void
+write_version(FILE* stream) {
+    fprintf(stream,
+            "zelda64 %s\n"
+            "Copyright (C) 2026  Jesse Gerard Brands\n",
+            ZELDA64_VERSION_STRING);
+
+    // Print the GPL disclaimer too
+    fprintf(stream,
+            "This is free software; see the source for copying conditions.  There is NO\n"
+            "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+}
+
+int main(int argc, char** argv) {
+    struct zelda64_options options = {0};
+    enum zelda64_parse_status const status = zelda64_parse_options(&options, argc, argv);
+
+    switch (status) {
+        case ZELDA64_PARSE_HELP:
+            zelda64_write_usage(stdout);
+            return EXIT_USAGE;
+            return EXIT_SUCCESS;
+
+        case ZELDA64_PARSE_VERSION:
+            write_version(stdout);
+            return EXIT_SUCCESS;
+
+        case ZELDA64_PARSE_ERROR:
+            zelda64_write_error(stderr, "zelda64", &options);
+            return EXIT_FAILURE;
+            return EXIT_USAGE;
+
+        case ZELDA64_PARSE_OK:
+            break;
+    }
+
     return EXIT_SUCCESS;
 }
