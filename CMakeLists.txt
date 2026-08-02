@@ -28,6 +28,7 @@ set(ZELDA64_SOURCES
         lib/crc32.c
         lib/io.c
         lib/io_buffer.c
+        lib/rom.c
         lib/zelda64.c)
 
 if (ZELDA64_USE_LIBC)

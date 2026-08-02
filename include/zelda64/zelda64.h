@@ -40,6 +40,10 @@
 #  define ZELDA64_API
 #endif
 
+#define ZELDA64_MAKEROM_SIZE    0x1000
+#define ZELDA64_ROM_HEADER_SIZE 0x40
+#define ZELDA64_BOOTCODE_SIZE   0xFC0
+
 #if defined __cplusplus
 extern "C" {
 #endif
@@ -49,6 +53,7 @@ enum zelda64_result {
     ZELDA64_INVALID_PARAMETER = -1,
     ZELDA64_MEMORY_ERROR = -2,
     ZELDA64_OUT_OF_RANGE = -3,
+    ZELDA64_BAD_HEADER = -4,
     ZELDA64_IO_ERROR = -100,
     ZELDA64_IO_READ_ONLY = -101,
     ZELDA64_IO_FIXED_SIZE = -102,
@@ -58,6 +63,15 @@ enum zelda64_compression_level {
     ZELDA64_DEFAULT_COMPRESSION = -1,
     ZELDA64_NO_COMPRESSION = 0,
     ZELDA64_BEST_COMPRESSION = 9,
+};
+
+enum zelda64_cic {
+    ZELDA64_CIC_UNKNOWN = 0,
+    ZELDA64_CIC_6101 = 6101,
+    ZELDA64_CIC_6102 = 6102,
+    ZELDA64_CIC_6103 = 6103,
+    ZELDA64_CIC_6105 = 6105,
+    ZELDA64_CIC_6106 = 6106,
 };
 
 #define ZELDA64_IS_IO_ERROR(x) ((x) <= ZELDA64_IO_ERROR)
@@ -86,6 +100,27 @@ struct zelda64_io {
     zelda64_io_size_func size;
     zelda64_io_resize_func resize;
     void* opaque;
+};
+
+struct zelda64_rom_header {
+    uint8_t reserved0;          // 0x00  0x80 on all commercial ROMs
+    uint8_t pi_config[3];       // 0x01  PI BSD DOM1 RLS/PGS/PWD/LAT
+    uint32_t clock_rate;        // 0x04
+    uint32_t boot_address;      // 0x08  not the entry point on 6103/6106
+    uint32_t libultra_version;  // 0x0C
+    uint64_t check_code;        // 0x10  commonly called CRC1/CRC2
+    uint8_t reserved1[8];       // 0x18
+    char title[20];             // 0x20  20 bytes, padded (NOT NUL-terminated)
+    uint8_t reserved2[7];       // 0x34
+    char game_code[4];          // 0x3B  4 bytes (NOT NUL-terminated)
+    uint8_t version;            // 0x3F
+};
+
+struct zelda64_rom_info {
+    struct zelda64_rom_header header;
+    uint32_t ipl_checksum;
+    enum zelda64_cic cic;
+    uint32_t entrypoint;
 };
 
 ZELDA64_API char const* zelda64_result_string(enum zelda64_result result);
@@ -121,6 +156,14 @@ zelda64_io_from_const_buffer(struct zelda64_io* io,
  */
 ZELDA64_API void zelda64_io_close(struct zelda64_io* io);
 
+/*
+ * Reads and decodes the Nintendo 64 IPL section of a ROM.
+ */
+ZELDA64_API enum zelda64_result
+zelda64_read_rom_info(struct zelda64_io const* io, struct zelda64_rom_info* info);
+
+ZELDA64_API char const*
+zelda64_cic_name(enum zelda64_cic cic);
 
 // !! ====================================================================== !!
 //    Functions that require the C standard library go in this block.

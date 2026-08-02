@@ -1,0 +1,140 @@
+/*
+ * rom.c: Nintendo 64 ROM decode functions
+ * Copyright (C) 2026 Jesse Gerard Brands
+ *
+ * This file is part of libzelda64.
+ *
+ * libzelda64 is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * libzelda64 is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with libzelda64. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include <string.h>
+
+#include "crc32.h"
+#include "io.h"
+#include "zelda64/zelda64.h"
+
+#define ROM_MAGIC            0x80371240u
+#define ROM_CHUNK_SIZE       0x200
+
+#define OFF_RESERVED0        0x00
+#define OFF_PI_CONFIG        0x01
+#define OFF_CLOCK_RATE       0x04
+#define OFF_BOOT_ADDRESS     0x08
+#define OFF_LIBULTRA_VERSION 0x0C
+#define OFF_CHECK_CODE       0x10
+#define OFF_RESERVED1        0x18
+#define OFF_TITLE            0x20
+#define OFF_RESERVED2        0x34
+#define OFF_GAME_CODE        0x3B
+#define OFF_VERSION          0x3F
+#define OFF_BOOTCODE         0x40
+
+static enum zelda64_cic
+cic_for_crc32(uint32_t const bootcode_crc32) {
+    switch (bootcode_crc32) {
+        case 0x6170A4A1: return ZELDA64_CIC_6101;
+        case 0x90BB6CB5: return ZELDA64_CIC_6102;
+        case 0x0B050EE0: return ZELDA64_CIC_6103;
+        case 0x98BC2C86: return ZELDA64_CIC_6105;
+        case 0xACC8580A: return ZELDA64_CIC_6106;
+        default:
+            return ZELDA64_CIC_UNKNOWN;
+    }
+}
+
+static uint32_t
+entry_point_for(uint32_t const boot_address, enum zelda64_cic const cic) {
+    switch (cic) {
+        case ZELDA64_CIC_6103: return boot_address - 0x100000u;
+        case ZELDA64_CIC_6106: return boot_address - 0x200000u;
+
+        case ZELDA64_CIC_UNKNOWN:
+        case ZELDA64_CIC_6101:
+        case ZELDA64_CIC_6102:
+        case ZELDA64_CIC_6105:
+            break;
+    }
+    return boot_address;
+}
+
+static void
+decode_header(struct zelda64_rom_header* header, uint8_t const* chunk) {
+    // @formatter:off
+    header->reserved0        = chunk[OFF_RESERVED0];
+    memcpy(header->pi_config, &chunk[OFF_PI_CONFIG], sizeof header->pi_config);
+    header->clock_rate       = zelda64_read_u32(&chunk[OFF_CLOCK_RATE]);
+    header->boot_address     = zelda64_read_u32(&chunk[OFF_BOOT_ADDRESS]);
+    header->libultra_version = zelda64_read_u32(&chunk[OFF_LIBULTRA_VERSION]);
+    header->check_code       = zelda64_read_u64(&chunk[OFF_CHECK_CODE]);
+    memcpy(header->reserved1, &chunk[OFF_RESERVED1], sizeof header->reserved1);
+    memcpy(header->title,     &chunk[OFF_TITLE],     sizeof header->title);
+    memcpy(header->reserved2, &chunk[OFF_RESERVED2], sizeof header->reserved2);
+    memcpy(header->game_code, &chunk[OFF_GAME_CODE], sizeof header->game_code);
+    header->version          = chunk[OFF_VERSION];
+    // @formatter:on
+}
+
+enum zelda64_result
+zelda64_read_rom_info(struct zelda64_io const* io, struct zelda64_rom_info* info) {
+    if (info == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+
+    *info = (struct zelda64_rom_info){0};
+
+    uint8_t chunk[ROM_CHUNK_SIZE];
+    enum zelda64_result result = zelda64_io_read(io, 0, chunk, ZELDA64_ROM_HEADER_SIZE);
+    if (result != ZELDA64_OK) {
+        return result;
+    }
+
+    decode_header(&info->header, chunk);
+    uint32_t const magic = zelda64_read_u32(chunk);
+
+    uint32_t crc = 0;
+    size_t offset = OFF_BOOTCODE;
+    while (offset < ZELDA64_MAKEROM_SIZE) {
+        size_t const remaining = ZELDA64_MAKEROM_SIZE - offset;
+        size_t const want = remaining < sizeof chunk ? remaining : sizeof chunk;
+
+        result = zelda64_io_read(io, offset, chunk, want);
+        if (result != ZELDA64_OK) {
+            return result;
+        }
+
+        crc = zelda64_crc32(crc, chunk, want);
+        offset += want;
+    }
+
+    info->ipl_checksum = crc;
+    info->cic = cic_for_crc32(crc);
+    info->entrypoint = entry_point_for(info->header.boot_address, info->cic);
+
+    return magic == ROM_MAGIC
+               ? ZELDA64_OK
+               : ZELDA64_BAD_HEADER;
+}
+
+char const*
+zelda64_cic_name(enum zelda64_cic const cic) {
+    switch (cic) {
+        case ZELDA64_CIC_UNKNOWN: return "unknown";
+        case ZELDA64_CIC_6101: return "CIC-NUS-6101";
+        case ZELDA64_CIC_6102: return "CIC-NUS-6102/7101";
+        case ZELDA64_CIC_6103: return "CIC-NUS-6103/7103";
+        case ZELDA64_CIC_6105: return "CIC-NUS-6105";
+        case ZELDA64_CIC_6106: return "CIC-NUS-6106/7106";
+    }
+    return "unknown";
+}
