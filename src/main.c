@@ -18,10 +18,12 @@
  * zelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "zelda64_config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "zelda64_config.h"
+#include "info.h"
 #include "options.h"
 
 #define EXIT_USAGE 2
@@ -61,5 +63,20 @@ int main(int argc, char** argv) {
             break;
     }
 
-    return EXIT_SUCCESS;
+    enum zelda64_result result = ZELDA64_OK;
+
+    switch (options.mode) {
+        case ZELDA64_MODE_INFO:
+            result = zelda64_run_info(&options);
+            break;
+
+        case ZELDA64_MODE_NONE:
+        case ZELDA64_MODE_LIST:
+        case ZELDA64_MODE_EXTRACT:
+        case ZELDA64_MODE_COMPRESS:
+        case ZELDA64_MODE_DECOMPRESS:
+            break;
+    }
+
+    return result == ZELDA64_OK ? EXIT_SUCCESS : EXIT_FAILURE;
 }
