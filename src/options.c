@@ -33,6 +33,7 @@
 enum {
     OPT_HELP = 'h',
     OPT_INFORMATION = 'i',
+    OPT_DMA_TABLE = 't',
     OPT_VERBOSE = 'v',
     OPT_VERSION = 256,
 };
@@ -49,10 +50,11 @@ struct zelda64_option {
 
 // @formatter:off
 static struct zelda64_option const options_table[] = {
-    {'i', "info",    false, OPT_INFORMATION, 0, NULL, "show ROM information"},
-    {'v', "verbose", false, OPT_VERBOSE,     0, NULL, "display verbose messages"},
-    {0,   "version", false, OPT_VERSION,     0, NULL, "display version information"},
-    {'h', "help",    false, OPT_HELP,        0, NULL, "display this message"},
+    {'i', "info",      false, OPT_INFORMATION, 0, NULL, "show ROM information"},
+    {'t', "dma-table", false, OPT_DMA_TABLE,   0, NULL, "show DMA table"},
+    {'v', "verbose",   false, OPT_VERBOSE,     0, NULL, "display verbose messages"},
+    {0,   "version",   false, OPT_VERSION,     0, NULL, "display version information"},
+    {'h', "help",      false, OPT_HELP,        0, NULL, "display this message"},
 };
 // @formatter:on
 
@@ -115,6 +117,9 @@ mode_for(int const id) {
     switch (id) {
         case OPT_INFORMATION:
             return ZELDA64_MODE_INFO;
+
+        case OPT_DMA_TABLE:
+            return ZELDA64_MODE_LIST;
     }
     // Prefer this over default, it triggers missing case warnings.
     return ZELDA64_MODE_NONE;
@@ -138,11 +143,11 @@ apply_option(struct zelda64_options* options, struct zelda64_option const* opt, 
 
     switch (opt->id) {
         case OPT_INFORMATION:
+        case OPT_DMA_TABLE:
             if (!set_mode(options, mode_for(opt->id))) {
                 return parser_error(options, ZELDA64_OPTION_MODE_CONFLICT, arg);
             }
             break;
-
 
         case OPT_VERBOSE:
             options->verbose = true;

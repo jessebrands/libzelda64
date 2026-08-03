@@ -24,6 +24,7 @@
 #include <stdlib.h>
 
 #include "info.h"
+#include "list.h"
 #include "options.h"
 
 #define EXIT_USAGE 2
@@ -70,8 +71,11 @@ int main(int argc, char** argv) {
             result = zelda64_run_info(&options);
             break;
 
-        case ZELDA64_MODE_NONE:
         case ZELDA64_MODE_LIST:
+            result = zelda64_list_dma_table(&options);
+            break;
+
+        case ZELDA64_MODE_NONE:
         case ZELDA64_MODE_EXTRACT:
         case ZELDA64_MODE_COMPRESS:
         case ZELDA64_MODE_DECOMPRESS:

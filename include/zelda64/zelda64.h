@@ -193,6 +193,14 @@ ZELDA64_API enum zelda64_result
 zelda64_find_dma_table(struct zelda64_io const* io,
                        struct zelda64_dma_table* table);
 
+ZELDA64_API enum zelda64_result
+zelda64_read_dma_table(struct zelda64_io const* io,
+                       struct zelda64_dma_table const* table,
+                       struct zelda64_dma_entry* entries, size_t count);
+
+ZELDA64_API enum zelda64_dma_kind
+zelda64_dma_entry_kind(struct zelda64_dma_entry const* entry);
+
 
 // !! ====================================================================== !!
 //    Functions that require the C standard library go in this block.

@@ -142,3 +142,56 @@ zelda64_find_dma_table(struct zelda64_io const* io, struct zelda64_dma_table* ta
         offset += want;
     }
 }
+
+enum zelda64_result zelda64_read_dma_table(struct zelda64_io const* io,
+                                           struct zelda64_dma_table const* table,
+                                           struct zelda64_dma_entry* entries,
+                                           size_t const count) {
+    assert(io != NULL);
+
+    if (table == NULL || entries == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    if (count < table->count) {
+        return ZELDA64_OUT_OF_RANGE;
+    }
+
+    size_t const total = table->count * DMA_ENTRY_SIZE;
+    size_t bytes_in = 0;
+    uint8_t chunk[CHUNK_SIZE];
+
+    while (bytes_in < total) {
+        size_t const remaining = total - bytes_in;
+        size_t const want = remaining < sizeof chunk ? remaining : sizeof chunk;
+        size_t const cursor = table->offset + bytes_in;
+
+        enum zelda64_result const result = zelda64_io_read(io, cursor, chunk, want);
+        if (result != ZELDA64_OK) {
+            return result;
+        }
+
+        for (size_t i = 0; i < want; i += DMA_ENTRY_SIZE) {
+            size_t const entry = (bytes_in + i) / DMA_ENTRY_SIZE;
+            entries[entry] = read_entry_unsafe(&chunk[i]);
+        }
+
+        bytes_in += want;
+    }
+
+    return ZELDA64_OK;
+}
+
+enum zelda64_dma_kind zelda64_dma_entry_kind(struct zelda64_dma_entry const* entry) {
+    assert(entry != NULL);
+
+    if (entry->vrom_end == entry->vrom_start) {
+        return ZELDA64_DMA_EMPTY;
+    }
+    if (entry->rom_end == UINT32_MAX) {
+        return ZELDA64_DMA_DELETED;
+    }
+    if (entry->rom_end == 0) {
+        return ZELDA64_DMA_UNCOMPRESSED;
+    }
+    return ZELDA64_DMA_COMPRESSED;
+}
