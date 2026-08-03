@@ -24,8 +24,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "zelda64/zelda64.h"
-
 enum zelda64_mode {
     ZELDA64_MODE_NONE = 0,
     ZELDA64_MODE_INFO,

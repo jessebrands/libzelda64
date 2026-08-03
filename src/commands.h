@@ -21,7 +21,8 @@
 #ifndef ZELDA64_COMMANDS_H
 #define ZELDA64_COMMANDS_H
 
-#include "zelda64/zelda64.h"
+#include <zelda64/zelda64.h>
+
 #include "options.h"
 
 enum zelda64_result

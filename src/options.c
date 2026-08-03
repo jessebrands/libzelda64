@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <zelda64/zelda64.h>
 
 #include "options.h"
 

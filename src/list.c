@@ -20,7 +20,6 @@
 
 #include <inttypes.h>
 #include <stdlib.h>
-#include <zelda64/zelda64.h>
 
 #include "commands.h"
 
