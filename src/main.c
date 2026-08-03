@@ -18,13 +18,13 @@
  * zelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "zelda64/zelda64.h"
 #include "zelda64_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "info.h"
-#include "list.h"
+#include "commands.h"
 #include "options.h"
 
 #define EXIT_USAGE 2

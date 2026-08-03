@@ -1,5 +1,5 @@
 /*
- * info.h: ROM info
+ * commands.h: application commands
  * Copyright (C) 2026 Jesse Gerard Brands
  *
  * This file is part of zelda64.
@@ -18,8 +18,8 @@
  * zelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ZELDA64_INFO_H
-#define ZELDA64_INFO_H
+#ifndef ZELDA64_COMMANDS_H
+#define ZELDA64_COMMANDS_H
 
 #include "zelda64/zelda64.h"
 #include "options.h"
@@ -27,4 +27,7 @@
 enum zelda64_result
 zelda64_run_info(struct zelda64_options const* options);
 
-#endif //ZELDA64_INFO_H
+enum zelda64_result
+zelda64_list_dma_table(struct zelda64_options const* options);
+
+#endif //ZELDA64_COMMANDS_H

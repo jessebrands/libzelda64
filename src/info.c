@@ -21,7 +21,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-#include "info.h"
+#include "commands.h"
 
 enum zelda64_result zelda64_run_info(struct zelda64_options const* options) {
     struct zelda64_io rom_file;

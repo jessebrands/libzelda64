@@ -128,8 +128,7 @@ if (ZELDA64_BUILD_APPLICATION OR ZELDA64_BUILD_STATIC OR ZELDA64_BUILD_TESTS)
 endif ()
 
 set(ZELDA64_BIN_HEADERS
-        src/info.h
-        src/list.h
+        src/commands.h
         src/options.h)
 
 set(ZELDA64_BIN_SOURCES

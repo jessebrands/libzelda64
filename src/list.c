@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <zelda64/zelda64.h>
 
-#include "list.h"
+#include "commands.h"
 
 static char const*
 entry_kind_name(enum zelda64_dma_kind const kind) {
