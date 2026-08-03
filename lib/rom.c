@@ -25,7 +25,10 @@
 #include "rom.h"
 #include "zelda64/zelda64.h"
 
-#define ROM_CHUNK_SIZE 0x200
+
+#define CHUNK_SIZE          0x200
+#define CIC_DETECT_START    0x40
+#define CIC_DETECT_END      0x1000
 
 static enum zelda64_cic
 cic_for_crc32(uint32_t const bootcode_crc32) {
@@ -80,8 +83,8 @@ zelda64_read_rom_info(struct zelda64_io const* rom, struct zelda64_rom_info* inf
 
     *info = (struct zelda64_rom_info){0};
 
-    uint8_t chunk[ROM_CHUNK_SIZE];
-    enum zelda64_result result = zelda64_io_read(rom, 0, chunk, ZELDA64_ROM_HEADER_SIZE);
+    uint8_t chunk[CHUNK_SIZE];
+    enum zelda64_result result = zelda64_io_read(rom, 0, chunk, ROM_HEADER_SIZE);
     if (result != ZELDA64_OK) {
         return result;
     }
@@ -90,9 +93,9 @@ zelda64_read_rom_info(struct zelda64_io const* rom, struct zelda64_rom_info* inf
     uint32_t const magic = zelda64_read_u32(chunk);
 
     uint32_t crc = 0;
-    size_t offset = ROM_OFFSET_BOOTCODE;
-    while (offset < ZELDA64_MAKEROM_SIZE) {
-        size_t const remaining = ZELDA64_MAKEROM_SIZE - offset;
+    size_t offset = CIC_DETECT_START;
+    while (offset < CIC_DETECT_END) {
+        size_t const remaining = CIC_DETECT_END - offset;
         size_t const want = remaining < sizeof chunk ? remaining : sizeof chunk;
 
         result = zelda64_io_read(rom, offset, chunk, want);

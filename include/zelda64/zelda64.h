@@ -40,10 +40,6 @@
 #  define ZELDA64_API
 #endif
 
-#define ZELDA64_MAKEROM_SIZE    0x1000
-#define ZELDA64_ROM_HEADER_SIZE 0x40
-#define ZELDA64_BOOTCODE_SIZE   0xFC0
-
 #if defined __cplusplus
 extern "C" {
 #endif
