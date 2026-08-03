@@ -22,23 +22,10 @@
 
 #include "crc32.h"
 #include "io.h"
+#include "rom.h"
 #include "zelda64/zelda64.h"
 
-#define ROM_MAGIC            0x80371240u
-#define ROM_CHUNK_SIZE       0x200
-
-#define OFF_RESERVED0        0x00
-#define OFF_PI_CONFIG        0x01
-#define OFF_CLOCK_RATE       0x04
-#define OFF_BOOT_ADDRESS     0x08
-#define OFF_LIBULTRA_VERSION 0x0C
-#define OFF_CHECK_CODE       0x10
-#define OFF_RESERVED1        0x18
-#define OFF_TITLE            0x20
-#define OFF_RESERVED2        0x34
-#define OFF_GAME_CODE        0x3B
-#define OFF_VERSION          0x3F
-#define OFF_BOOTCODE         0x40
+#define ROM_CHUNK_SIZE 0x200
 
 static enum zelda64_cic
 cic_for_crc32(uint32_t const bootcode_crc32) {
@@ -71,17 +58,17 @@ entry_point_for(uint32_t const boot_address, enum zelda64_cic const cic) {
 static void
 decode_header(struct zelda64_rom_header* header, uint8_t const* chunk) {
     // @formatter:off
-    header->reserved0        = chunk[OFF_RESERVED0];
-    memcpy(header->pi_config, &chunk[OFF_PI_CONFIG], sizeof header->pi_config);
-    header->clock_rate       = zelda64_read_u32(&chunk[OFF_CLOCK_RATE]);
-    header->boot_address     = zelda64_read_u32(&chunk[OFF_BOOT_ADDRESS]);
-    header->libultra_version = zelda64_read_u32(&chunk[OFF_LIBULTRA_VERSION]);
-    header->check_code       = zelda64_read_u64(&chunk[OFF_CHECK_CODE]);
-    memcpy(header->reserved1, &chunk[OFF_RESERVED1], sizeof header->reserved1);
-    memcpy(header->title,     &chunk[OFF_TITLE],     sizeof header->title);
-    memcpy(header->reserved2, &chunk[OFF_RESERVED2], sizeof header->reserved2);
-    memcpy(header->game_code, &chunk[OFF_GAME_CODE], sizeof header->game_code);
-    header->version          = chunk[OFF_VERSION];
+    header->reserved0        = chunk[ROM_OFFSET_RESERVED0];
+    memcpy(header->pi_config, &chunk[ROM_OFFSET_PI_CONFIG], sizeof header->pi_config);
+    header->clock_rate       = zelda64_read_u32(&chunk[ROM_OFFSET_CLOCK_RATE]);
+    header->boot_address     = zelda64_read_u32(&chunk[ROM_OFFSET_BOOT_ADDRESS]);
+    header->libultra_version = zelda64_read_u32(&chunk[ROM_OFFSET_LIBULTRA_VERSION]);
+    header->check_code       = zelda64_read_u64(&chunk[ROM_OFFSET_CHECK_CODE]);
+    memcpy(header->reserved1, &chunk[ROM_OFFSET_RESERVED1], sizeof header->reserved1);
+    memcpy(header->title,     &chunk[ROM_OFFSET_TITLE],     sizeof header->title);
+    memcpy(header->reserved2, &chunk[ROM_OFFSET_RESERVED2], sizeof header->reserved2);
+    memcpy(header->game_code, &chunk[ROM_OFFSET_GAME_CODE], sizeof header->game_code);
+    header->version          = chunk[ROM_OFFSET_VERSION];
     // @formatter:on
 }
 
@@ -103,7 +90,7 @@ zelda64_read_rom_info(struct zelda64_io const* io, struct zelda64_rom_info* info
     uint32_t const magic = zelda64_read_u32(chunk);
 
     uint32_t crc = 0;
-    size_t offset = OFF_BOOTCODE;
+    size_t offset = ROM_OFFSET_BOOTCODE;
     while (offset < ZELDA64_MAKEROM_SIZE) {
         size_t const remaining = ZELDA64_MAKEROM_SIZE - offset;
         size_t const want = remaining < sizeof chunk ? remaining : sizeof chunk;

@@ -22,7 +22,8 @@ set(ZELDA64_PUBLIC_HEADERS
 set(ZELDA64_PRIVATE_HEADERS
         lib/allocator.h
         lib/crc32.h
-        lib/io.h)
+        lib/io.h
+        lib/rom.h)
 
 set(ZELDA64_SOURCES
         lib/crc32.c
