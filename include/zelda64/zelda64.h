@@ -178,6 +178,18 @@ zelda64_io_from_const_buffer(struct zelda64_io* io,
  */
 ZELDA64_API void zelda64_io_close(struct zelda64_io* io);
 
+ZELDA64_API enum zelda64_result
+zelda64_io_read(struct zelda64_io const* io, size_t offset, uint8_t* dst, size_t size);
+
+ZELDA64_API enum zelda64_result
+zelda64_io_write(struct zelda64_io* io, size_t offset, uint8_t const* src, size_t size);
+
+ZELDA64_API enum zelda64_result
+zelda64_io_size(struct zelda64_io const* io, size_t* size);
+
+ZELDA64_API enum zelda64_result
+zelda64_io_resize(struct zelda64_io* io, size_t size);
+
 /*
  * Reads and decodes the Nintendo 64 IPL section of a ROM.
  */
