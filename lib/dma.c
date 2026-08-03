@@ -195,3 +195,40 @@ enum zelda64_dma_kind zelda64_dma_entry_kind(struct zelda64_dma_entry const* ent
     }
     return ZELDA64_DMA_COMPRESSED;
 }
+
+enum zelda64_result
+zelda64_dma_entry_extent(struct zelda64_dma_entry const* entry,
+                         uint32_t* offset, uint32_t* size) {
+    if (entry == NULL || offset == NULL || size == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+
+    enum zelda64_dma_kind const kind = zelda64_dma_entry_kind(entry);
+    switch (kind) {
+        case ZELDA64_DMA_EMPTY:
+            *offset = entry->rom_start;
+            *size = 0;
+            return ZELDA64_OK;
+
+        case ZELDA64_DMA_DELETED:
+            return ZELDA64_INVALID_PARAMETER;
+
+        case ZELDA64_DMA_UNCOMPRESSED:
+            if (entry->vrom_start > entry->vrom_end) {
+                return ZELDA64_OUT_OF_RANGE;
+            }
+            *offset = entry->rom_start;
+            *size = entry->vrom_end - entry->vrom_start;
+            return ZELDA64_OK;
+
+        case ZELDA64_DMA_COMPRESSED:
+            if (entry->rom_start > entry->rom_end) {
+                return ZELDA64_OUT_OF_RANGE;
+            }
+            *offset = entry->rom_start;
+            *size = entry->rom_end - entry->rom_start;
+            return ZELDA64_OK;
+    }
+
+    return ZELDA64_INVALID_PARAMETER;
+}

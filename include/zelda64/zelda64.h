@@ -203,6 +203,10 @@ zelda64_read_dma_table(struct zelda64_io const* rom,
 ZELDA64_API enum zelda64_dma_kind
 zelda64_dma_entry_kind(struct zelda64_dma_entry const* entry);
 
+ZELDA64_API enum zelda64_result
+zelda64_dma_entry_extent(struct zelda64_dma_entry const* entry,
+                         uint32_t* offset, uint32_t* size);
+
 
 // !! ====================================================================== !!
 //    Functions that require the C standard library go in this block.
