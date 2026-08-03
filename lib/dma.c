@@ -125,7 +125,7 @@ zelda64_find_dma_table(struct zelda64_io const* io, struct zelda64_dma_table* ta
             // Check to make sure that end > start and that the range is
             // aligned to 16 bytes, as an extra safety check.
             uint32_t const span = e2.vrom_end - e2.vrom_start;
-            if (e2.vrom_end <= e2.vrom_start || span % DMA_ENTRY_SIZE != 0) {
+            if (e2.vrom_end > rom_size || e2.vrom_end <= e2.vrom_start || span % DMA_ENTRY_SIZE != 0) {
                 continue;
             }
 
