@@ -15,9 +15,9 @@ set(CMAKE_C_EXTENSIONS OFF)
 #
 # Library settings
 #
-option(LIBZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
-option(LIBZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
-option(LIBZELDA64_BUILD_TESTS "Enable building the testing suite" ${PROJECT_IS_TOP_LEVEL})
+option(ZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
+option(ZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
+option(ZELDA64_BUILD_TESTS "Enable building the testing suite" ${PROJECT_IS_TOP_LEVEL})
 
 #
 # Advanced settings
@@ -28,17 +28,17 @@ mark_as_advanced(ZELDA64_USE_LIBC)
 
 find_package(yaz0 REQUIRED)
 
-set(LIBZELDA64_PUBLIC_HEADERS
+set(ZELDA64_PUBLIC_HEADERS
         include/zelda64/zelda64.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h)
 
-set(LIBZELDA64_PRIVATE_HEADERS
+set(ZELDA64_PRIVATE_HEADERS
         lib/allocator.h
         lib/crc32.h
         lib/io.h
         lib/rom.h)
 
-set(LIBZELDA64_SOURCES
+set(ZELDA64_SOURCES
         lib/crc32.c
         lib/dma.c
         lib/io.c
@@ -59,13 +59,13 @@ function(zelda64_enable_warnings target)
 endfunction()
 
 if (ZELDA64_USE_LIBC)
-    list(APPEND LIBZELDA64_SOURCES
+    list(APPEND ZELDA64_SOURCES
             lib/allocator.c)
 
     if (WIN32)
-        list(APPEND LIBZELDA64_SOURCES lib/io_file_win32.c)
+        list(APPEND ZELDA64_SOURCES lib/io_file_win32.c)
     elseif (UNIX)
-        list(APPEND LIBZELDA64_SOURCES lib/io_file_posix.c)
+        list(APPEND ZELDA64_SOURCES lib/io_file_posix.c)
     else ()
         message(WARNING "No I/O and allocator implementation for this platform, turning ZELDA64_USE_LIBC off.")
         set(ZELDA64_USE_LIBC OFF)
@@ -77,11 +77,11 @@ configure_file(
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h
         @ONLY)
 
-if (LIBZELDA64_BUILD_SHARED)
+if (ZELDA64_BUILD_SHARED)
     add_library(zelda64 SHARED
-            ${LIBZELDA64_SOURCES}
-            ${LIBZELDA64_PUBLIC_HEADERS}
-            ${LIBZELDA64_PRIVATE_HEADERS})
+            ${ZELDA64_SOURCES}
+            ${ZELDA64_PUBLIC_HEADERS}
+            ${ZELDA64_PRIVATE_HEADERS})
 
     add_library(zelda64::zelda64 ALIAS zelda64)
 
@@ -104,11 +104,11 @@ if (LIBZELDA64_BUILD_SHARED)
     zelda64_enable_warnings(zelda64)
 endif ()
 
-if (LIBZELDA64_BUILD_STATIC OR LIBZELDA64_BUILD_TESTS)
+if (ZELDA64_BUILD_STATIC OR ZELDA64_BUILD_TESTS)
     add_library(zelda64_static STATIC
-            ${LIBZELDA64_SOURCES}
-            ${LIBZELDA64_PUBLIC_HEADERS}
-            ${LIBZELDA64_PRIVATE_HEADERS})
+            ${ZELDA64_SOURCES}
+            ${ZELDA64_PUBLIC_HEADERS}
+            ${ZELDA64_PRIVATE_HEADERS})
 
     add_library(zelda64::zelda64_static ALIAS zelda64_static)
 
@@ -128,7 +128,7 @@ if (LIBZELDA64_BUILD_STATIC OR LIBZELDA64_BUILD_TESTS)
     zelda64_enable_warnings(zelda64_static)
 endif ()
 
-if (LIBZELDA64_BUILD_TESTS)
+if (ZELDA64_BUILD_TESTS)
     enable_testing()
     add_subdirectory("test")
 endif ()
