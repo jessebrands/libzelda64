@@ -27,6 +27,7 @@ char const* zelda64_result_string(enum zelda64_result const result) {
         case ZELDA64_MEMORY_ERROR: return "memory error";
         case ZELDA64_OUT_OF_RANGE: return "out of range";
         case ZELDA64_BAD_HEADER: return "bad ROM header";
+        case ZELDA64_NO_DMADATA: return "ROM has no DMADATA";
 
         case ZELDA64_IO_ERROR: return "I/O error";
         case ZELDA64_IO_READ_ONLY: return "file is read only";

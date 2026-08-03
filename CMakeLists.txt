@@ -27,6 +27,7 @@ set(ZELDA64_PRIVATE_HEADERS
 
 set(ZELDA64_SOURCES
         lib/crc32.c
+        lib/dma.c
         lib/io.c
         lib/io_buffer.c
         lib/rom.c
@@ -128,10 +129,12 @@ endif ()
 
 set(ZELDA64_BIN_HEADERS
         src/info.h
+        src/list.h
         src/options.h)
 
 set(ZELDA64_BIN_SOURCES
         src/info.c
+        src/list.c
         src/main.c
         src/options.c)
 

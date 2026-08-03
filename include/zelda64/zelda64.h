@@ -54,6 +54,7 @@ enum zelda64_result {
     ZELDA64_MEMORY_ERROR = -2,
     ZELDA64_OUT_OF_RANGE = -3,
     ZELDA64_BAD_HEADER = -4,
+    ZELDA64_NO_DMADATA = -5,
     ZELDA64_IO_ERROR = -100,
     ZELDA64_IO_READ_ONLY = -101,
     ZELDA64_IO_FIXED_SIZE = -102,
@@ -72,6 +73,13 @@ enum zelda64_cic {
     ZELDA64_CIC_6103 = 6103,
     ZELDA64_CIC_6105 = 6105,
     ZELDA64_CIC_6106 = 6106,
+};
+
+enum zelda64_dma_kind {
+    ZELDA64_DMA_EMPTY = 0,
+    ZELDA64_DMA_DELETED,
+    ZELDA64_DMA_UNCOMPRESSED,
+    ZELDA64_DMA_COMPRESSED,
 };
 
 #define ZELDA64_IS_IO_ERROR(x) ((x) <= ZELDA64_IO_ERROR)
@@ -123,6 +131,19 @@ struct zelda64_rom_info {
     uint32_t entrypoint;
 };
 
+struct zelda64_dma_table {
+    uint32_t offset;  // physical offset of DMADATA in ROM
+    uint32_t size;    // size in bytes
+    size_t count;     // count of entries in DMADATA
+};
+
+struct zelda64_dma_entry {
+    uint32_t vrom_start;
+    uint32_t vrom_end;
+    uint32_t rom_start;
+    uint32_t rom_end;
+};
+
 ZELDA64_API char const* zelda64_result_string(enum zelda64_result result);
 
 /*
@@ -164,6 +185,14 @@ zelda64_read_rom_info(struct zelda64_io const* io, struct zelda64_rom_info* info
 
 ZELDA64_API char const*
 zelda64_cic_name(enum zelda64_cic cic);
+
+/*
+ * Attempts to locate the DMA table in a ROM.
+ */
+ZELDA64_API enum zelda64_result
+zelda64_find_dma_table(struct zelda64_io const* io,
+                       struct zelda64_dma_table* table);
+
 
 // !! ====================================================================== !!
 //    Functions that require the C standard library go in this block.
