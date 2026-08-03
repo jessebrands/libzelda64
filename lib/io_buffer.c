@@ -40,7 +40,7 @@ static enum zelda64_result
 zelda64_io_buffer_read(void* opaque, size_t const offset, uint8_t* dst, size_t const size) {
     struct zelda64_io_buffer const* buffer = opaque;
     if (offset > buffer->size || size > buffer->size - offset) {
-        return ZELDA64_OUT_OF_RANGE;
+        return ZELDA64_IO_END_OF_FILE;
     }
     // memcpy with a NULL source is undefined behavior
     if (size == 0) {

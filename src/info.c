@@ -46,7 +46,7 @@ enum zelda64_result zelda64_run_info(struct zelda64_options const* options) {
 
     if (result != ZELDA64_OK) {
         fprintf(stderr, "Could not read ROM header: ");
-        if (result == ZELDA64_OUT_OF_RANGE) {
+        if (result == ZELDA64_IO_END_OF_FILE) {
             fprintf(stderr, "ROM is too small\n");
         } else {
             fprintf(stderr, "%s\n", zelda64_result_string(result));

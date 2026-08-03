@@ -60,9 +60,9 @@ static void test_buffer(struct zelda64_allocator const allocator) {
     check("read back at 4", zelda64_io_read(&io, 4, scratch, 4), ZELDA64_OK);
     check_that("  contents match", memcmp(scratch, source, 4) == 0);
 
-    check("read past end", zelda64_io_read(&io, 13, scratch, 4), ZELDA64_OUT_OF_RANGE);
+    check("read past end", zelda64_io_read(&io, 13, scratch, 4), ZELDA64_IO_END_OF_FILE);
     check("read 0 bytes at end", zelda64_io_read(&io, 16, scratch, 0), ZELDA64_OK);
-    check("read 0 bytes past end", zelda64_io_read(&io, 17, scratch, 0), ZELDA64_OUT_OF_RANGE);
+    check("read 0 bytes past end", zelda64_io_read(&io, 17, scratch, 0), ZELDA64_IO_END_OF_FILE);
     check("read NULL dst", zelda64_io_read(&io, 0, NULL, 4), ZELDA64_INVALID_PARAMETER);
 
     check("grow to 32", zelda64_io_resize(&io, 32), ZELDA64_OK);
@@ -120,8 +120,8 @@ static void test_file(struct zelda64_allocator const allocator) {
     check("read back", zelda64_io_read(&io, 0, scratch, 8), ZELDA64_OK);
     check_that("  contents match", memcmp(scratch, source, 8) == 0);
 
-    check("read past end", zelda64_io_read(&io, 100, scratch, 4), ZELDA64_OUT_OF_RANGE);
-    check("read straddling end", zelda64_io_read(&io, 6, scratch, 8), ZELDA64_OUT_OF_RANGE);
+    check("read past end", zelda64_io_read(&io, 100, scratch, 4), ZELDA64_IO_END_OF_FILE);
+    check("read straddling end", zelda64_io_read(&io, 6, scratch, 8), ZELDA64_IO_END_OF_FILE);
 
     check("write past end", zelda64_io_write(&io, 16, source, 4), ZELDA64_OK);
     check("size", zelda64_io_size(&io, &size), ZELDA64_OK);

@@ -58,6 +58,7 @@ enum zelda64_result {
     ZELDA64_IO_ERROR = -100,
     ZELDA64_IO_READ_ONLY = -101,
     ZELDA64_IO_FIXED_SIZE = -102,
+    ZELDA64_IO_END_OF_FILE = -103,
 };
 
 enum zelda64_compression_level {

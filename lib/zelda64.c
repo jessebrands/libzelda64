@@ -32,6 +32,7 @@ char const* zelda64_result_string(enum zelda64_result const result) {
         case ZELDA64_IO_ERROR: return "I/O error";
         case ZELDA64_IO_READ_ONLY: return "file is read only";
         case ZELDA64_IO_FIXED_SIZE: return "file is fixed size";
+        case ZELDA64_IO_END_OF_FILE: return "end of file";
     }
     return "unknown";
 }

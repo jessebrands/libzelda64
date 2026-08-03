@@ -51,13 +51,13 @@ zelda64_io_win32_file_read(void* opaque, size_t const offset, uint8_t* dst, size
     DWORD bytes_in;
     if (!ReadFile(file->handle, dst, want, &bytes_in, &ov)) {
         return GetLastError() == ERROR_HANDLE_EOF
-                   ? ZELDA64_OUT_OF_RANGE
+                   ? ZELDA64_IO_END_OF_FILE
                    : ZELDA64_IO_ERROR;
     }
 
     return want == bytes_in
                ? ZELDA64_OK
-               : ZELDA64_OUT_OF_RANGE;
+               : ZELDA64_IO_END_OF_FILE;
 }
 
 static enum zelda64_result

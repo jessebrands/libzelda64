@@ -57,7 +57,7 @@ zelda64_io_posix_file_read(void* opaque, size_t const offset, uint8_t* dst, size
 
         // If nothing went out, we've hit EOF.
         if (got == 0) {
-            return ZELDA64_OUT_OF_RANGE;
+            return ZELDA64_IO_END_OF_FILE;
         }
 
         bytes_in += (size_t) got;

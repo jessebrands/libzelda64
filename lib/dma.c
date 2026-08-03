@@ -101,7 +101,7 @@ zelda64_find_dma_table(struct zelda64_io const* rom, struct zelda64_dma_table* t
 
             result = zelda64_io_read(rom, e1_pos, data, sizeof data);
             if (result != ZELDA64_OK) {
-                return result == ZELDA64_OUT_OF_RANGE
+                return result == ZELDA64_IO_END_OF_FILE
                            ? ZELDA64_NO_DMADATA
                            : result;
             }
