@@ -181,7 +181,7 @@ ZELDA64_API void zelda64_io_close(struct zelda64_io* io);
  * Reads and decodes the Nintendo 64 IPL section of a ROM.
  */
 ZELDA64_API enum zelda64_result
-zelda64_read_rom_info(struct zelda64_io const* io, struct zelda64_rom_info* info);
+zelda64_read_rom_info(struct zelda64_io const* rom, struct zelda64_rom_info* info);
 
 ZELDA64_API char const*
 zelda64_cic_name(enum zelda64_cic cic);
@@ -190,13 +190,14 @@ zelda64_cic_name(enum zelda64_cic cic);
  * Attempts to locate the DMA table in a ROM.
  */
 ZELDA64_API enum zelda64_result
-zelda64_find_dma_table(struct zelda64_io const* io,
+zelda64_find_dma_table(struct zelda64_io const* rom,
                        struct zelda64_dma_table* table);
 
 ZELDA64_API enum zelda64_result
-zelda64_read_dma_table(struct zelda64_io const* io,
+zelda64_read_dma_table(struct zelda64_io const* rom,
                        struct zelda64_dma_table const* table,
-                       struct zelda64_dma_entry* entries, size_t count);
+                       struct zelda64_dma_entry* entries,
+                       size_t count);
 
 ZELDA64_API enum zelda64_dma_kind
 zelda64_dma_entry_kind(struct zelda64_dma_entry const* entry);

@@ -73,7 +73,7 @@ decode_header(struct zelda64_rom_header* header, uint8_t const* chunk) {
 }
 
 enum zelda64_result
-zelda64_read_rom_info(struct zelda64_io const* io, struct zelda64_rom_info* info) {
+zelda64_read_rom_info(struct zelda64_io const* rom, struct zelda64_rom_info* info) {
     if (info == NULL) {
         return ZELDA64_INVALID_PARAMETER;
     }
@@ -81,7 +81,7 @@ zelda64_read_rom_info(struct zelda64_io const* io, struct zelda64_rom_info* info
     *info = (struct zelda64_rom_info){0};
 
     uint8_t chunk[ROM_CHUNK_SIZE];
-    enum zelda64_result result = zelda64_io_read(io, 0, chunk, ZELDA64_ROM_HEADER_SIZE);
+    enum zelda64_result result = zelda64_io_read(rom, 0, chunk, ZELDA64_ROM_HEADER_SIZE);
     if (result != ZELDA64_OK) {
         return result;
     }
@@ -95,7 +95,7 @@ zelda64_read_rom_info(struct zelda64_io const* io, struct zelda64_rom_info* info
         size_t const remaining = ZELDA64_MAKEROM_SIZE - offset;
         size_t const want = remaining < sizeof chunk ? remaining : sizeof chunk;
 
-        result = zelda64_io_read(io, offset, chunk, want);
+        result = zelda64_io_read(rom, offset, chunk, want);
         if (result != ZELDA64_OK) {
             return result;
         }

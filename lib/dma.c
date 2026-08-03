@@ -44,8 +44,8 @@ can_be_makerom_entry(struct zelda64_dma_entry const entry) {
 }
 
 enum zelda64_result
-zelda64_find_dma_table(struct zelda64_io const* io, struct zelda64_dma_table* table) {
-    assert(io != NULL);
+zelda64_find_dma_table(struct zelda64_io const* rom, struct zelda64_dma_table* table) {
+    assert(rom != NULL);
 
     // let A = size of MAKEROM
     // let B = size of BOOTCODE
@@ -70,7 +70,7 @@ zelda64_find_dma_table(struct zelda64_io const* io, struct zelda64_dma_table* ta
 
     *table = (struct zelda64_dma_table){0};
 
-    enum zelda64_result result = zelda64_io_size(io, &rom_size);
+    enum zelda64_result result = zelda64_io_size(rom, &rom_size);
     if (result != ZELDA64_OK) {
         return result;
     }
@@ -83,7 +83,7 @@ zelda64_find_dma_table(struct zelda64_io const* io, struct zelda64_dma_table* ta
         size_t const remaining = rom_size - offset;
         size_t const want = remaining < sizeof chunk ? remaining : sizeof chunk;
 
-        result = zelda64_io_read(io, offset, chunk, want);
+        result = zelda64_io_read(rom, offset, chunk, want);
         if (result != ZELDA64_OK) {
             return result;
         }
@@ -99,7 +99,7 @@ zelda64_find_dma_table(struct zelda64_io const* io, struct zelda64_dma_table* ta
             size_t const e1_pos = match_pos + DMA_ENTRY_SIZE;
             uint8_t data[DMA_ENTRY_SIZE * 2];
 
-            result = zelda64_io_read(io, e1_pos, data, sizeof data);
+            result = zelda64_io_read(rom, e1_pos, data, sizeof data);
             if (result != ZELDA64_OK) {
                 return result == ZELDA64_OUT_OF_RANGE
                            ? ZELDA64_NO_DMADATA
@@ -143,11 +143,11 @@ zelda64_find_dma_table(struct zelda64_io const* io, struct zelda64_dma_table* ta
     }
 }
 
-enum zelda64_result zelda64_read_dma_table(struct zelda64_io const* io,
+enum zelda64_result zelda64_read_dma_table(struct zelda64_io const* rom,
                                            struct zelda64_dma_table const* table,
                                            struct zelda64_dma_entry* entries,
                                            size_t const count) {
-    assert(io != NULL);
+    assert(rom != NULL);
 
     if (table == NULL || entries == NULL) {
         return ZELDA64_INVALID_PARAMETER;
@@ -165,7 +165,7 @@ enum zelda64_result zelda64_read_dma_table(struct zelda64_io const* io,
         size_t const want = remaining < sizeof chunk ? remaining : sizeof chunk;
         size_t const cursor = table->offset + bytes_in;
 
-        enum zelda64_result const result = zelda64_io_read(io, cursor, chunk, want);
+        enum zelda64_result const result = zelda64_io_read(rom, cursor, chunk, want);
         if (result != ZELDA64_OK) {
             return result;
         }
