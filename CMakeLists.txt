@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.26)
 project(zelda64
         VERSION 0.1.0
         DESCRIPTION "Nintendo 64 Zelda ROM manipulation library"
@@ -18,11 +18,6 @@ set(CMAKE_C_EXTENSIONS OFF)
 option(LIBZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
 option(LIBZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
 option(LIBZELDA64_BUILD_TESTS "Enable building the testing suite" ${PROJECT_IS_TOP_LEVEL})
-
-#
-# Application settings
-#
-option(ZELDA64_BUILD_ZELDA64 "Enable building the zelda64 binary" ${PROJECT_IS_TOP_LEVEL})
 
 #
 # Advanced settings
@@ -109,7 +104,7 @@ if (LIBZELDA64_BUILD_SHARED)
     zelda64_enable_warnings(zelda64)
 endif ()
 
-if (ZELDA64_BUILD_ZELDA64 OR LIBZELDA64_BUILD_STATIC OR LIBZELDA64_BUILD_TESTS)
+if (LIBZELDA64_BUILD_STATIC OR LIBZELDA64_BUILD_TESTS)
     add_library(zelda64_static STATIC
             ${LIBZELDA64_SOURCES}
             ${LIBZELDA64_PUBLIC_HEADERS}
@@ -131,41 +126,6 @@ if (ZELDA64_BUILD_ZELDA64 OR LIBZELDA64_BUILD_STATIC OR LIBZELDA64_BUILD_TESTS)
             DEBUG_POSTFIX "d")
 
     zelda64_enable_warnings(zelda64_static)
-endif ()
-
-set(ZELDA64_HEADERS
-        src/commands.h
-        src/options.h)
-
-set(ZELDA64_SOURCES
-        src/info.c
-        src/list.c
-        src/main.c
-        src/options.c)
-
-if (ZELDA64_BUILD_ZELDA64 AND ZELDA64_USE_LIBC)
-    set(ZELDA64_PROGRAM_NAME "zelda64")
-
-    configure_file(
-            src/zelda64_config.h.in
-            ${CMAKE_CURRENT_BINARY_DIR}/src/zelda64_config.h
-            @ONLY)
-
-    add_executable(zelda64_bin
-            ${ZELDA64_SOURCES}
-            ${ZELDA64_HEADERS})
-
-    target_include_directories(zelda64_bin
-            PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src"
-            PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/src")
-
-    set_target_properties(zelda64_bin PROPERTIES
-            OUTPUT_NAME "${ZELDA64_PROGRAM_NAME}")
-
-    target_link_libraries(zelda64_bin
-            PRIVATE zelda64::zelda64_static)
-
-    zelda64_enable_warnings(zelda64_bin)
 endif ()
 
 if (LIBZELDA64_BUILD_TESTS)
