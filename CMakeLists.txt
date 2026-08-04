@@ -58,7 +58,7 @@ function(zelda64_enable_warnings target)
                 PRIVATE /w14826)   # sign-extended conversion
     else ()
         target_compile_options(${target}
-                PRIVATE -Wall -Wextra
+                PRIVATE -Wall -Wextra -pedantic
                 PRIVATE -Wconversion
                 PRIVATE -Wstrict-prototypes -Wmissing-prototypes
                 PRIVATE -Wold-style-definition)
