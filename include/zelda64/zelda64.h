@@ -143,6 +143,9 @@ struct zelda64_dma_entry {
 
 ZELDA64_API char const* zelda64_result_string(enum zelda64_result result);
 
+ZELDA64_API char const*
+zelda64_version_string(void);
+
 /*
  * Creates an in-memory read/write file and allocates a buffer for it.
  */

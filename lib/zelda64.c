@@ -36,3 +36,7 @@ char const* zelda64_result_string(enum zelda64_result const result) {
     }
     return "unknown";
 }
+
+char const* zelda64_version_string(void) {
+    return ZELDA64_VERSION_STRING;
+}
