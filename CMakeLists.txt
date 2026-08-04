@@ -20,11 +20,6 @@ option(ZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
 option(ZELDA64_BUILD_TESTS "Enable building the testing suite" ${PROJECT_IS_TOP_LEVEL})
 
 #
-# Python module settings
-#
-option(ZELDA64_BUILD_PYTHON_MODULE "Build the Python 3.11 module" OFF)
-
-#
 # Advanced settings
 #
 option(ZELDA64_USE_LIBC "Enable functions that use the C standard library" ON)
@@ -131,10 +126,6 @@ if (ZELDA64_BUILD_STATIC OR ZELDA64_BUILD_TESTS)
             DEBUG_POSTFIX "d")
 
     zelda64_enable_warnings(zelda64_static)
-endif ()
-
-if (ZELDA64_BUILD_PYTHON_MODULE)
-    add_subdirectory(python)
 endif ()
 
 if (ZELDA64_BUILD_TESTS)
