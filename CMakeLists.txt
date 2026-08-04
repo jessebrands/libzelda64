@@ -38,18 +38,18 @@ set(ZELDA64_PUBLIC_HEADERS
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h)
 
 set(ZELDA64_PRIVATE_HEADERS
-        lib/allocator.h
-        lib/crc32.h
-        lib/io.h
-        lib/rom.h)
+        src/allocator.h
+        src/crc32.h
+        src/io.h
+        src/rom.h)
 
 set(ZELDA64_SOURCES
-        lib/crc32.c
-        lib/dma.c
-        lib/io.c
-        lib/io_buffer.c
-        lib/rom.c
-        lib/zelda64.c)
+        src/crc32.c
+        src/dma.c
+        src/io.c
+        src/io_buffer.c
+        src/rom.c
+        src/zelda64.c)
 
 function(zelda64_enable_warnings target)
     if (MSVC)
@@ -65,12 +65,12 @@ endfunction()
 
 if (ZELDA64_USE_LIBC)
     list(APPEND ZELDA64_SOURCES
-            lib/allocator.c)
+            src/allocator.c)
 
     if (WIN32)
-        list(APPEND ZELDA64_SOURCES lib/io_file_win32.c)
+        list(APPEND ZELDA64_SOURCES src/io_file_win32.c)
     elseif (UNIX)
-        list(APPEND ZELDA64_SOURCES lib/io_file_posix.c)
+        list(APPEND ZELDA64_SOURCES src/io_file_posix.c)
     else ()
         message(WARNING "No I/O and allocator implementation for this platform, turning ZELDA64_USE_LIBC off.")
         set(ZELDA64_USE_LIBC OFF)
