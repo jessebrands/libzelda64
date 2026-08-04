@@ -1,4 +1,5 @@
 set(ZELDA64_TEST_HEADERS
+        arena.h
         check.h)
 
 if (ZELDA64_USE_LIBC)
