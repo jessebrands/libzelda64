@@ -48,7 +48,14 @@ set(ZELDA64_SOURCES
 
 function(zelda64_enable_warnings target)
     if (MSVC)
-        target_compile_options(${target} PRIVATE /W4)
+        target_compile_options(${target}
+                PRIVATE /W4
+                PRIVATE /w14242    # -Wconversion
+                PRIVATE /w14254    # narrower bit-field conversion
+                PRIVATE /w14255    # -Wstrict-prototypes
+                PRIVATE /w14296    # unsigned compares
+                PRIVATE /w14311    # pointer truncation
+                PRIVATE /w14826)   # sign-extended conversion
     else ()
         target_compile_options(${target}
                 PRIVATE -Wall -Wextra
