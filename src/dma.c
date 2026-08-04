@@ -45,8 +45,6 @@ can_be_makerom_entry(struct zelda64_dma_entry const entry) {
 
 enum zelda64_result
 zelda64_find_dma_table(struct zelda64_io const* rom, struct zelda64_dma_table* table) {
-    assert(rom != NULL);
-
     // let A = size of MAKEROM
     // let B = size of BOOTCODE
     // let C = size of DMADATA
@@ -147,8 +145,6 @@ enum zelda64_result zelda64_read_dma_table(struct zelda64_io const* rom,
                                            struct zelda64_dma_table const* table,
                                            struct zelda64_dma_entry* entries,
                                            size_t const count) {
-    assert(rom != NULL);
-
     if (table == NULL || entries == NULL) {
         return ZELDA64_INVALID_PARAMETER;
     }
