@@ -19,3 +19,4 @@ wheel.packages = ["python/zelda64"]
 cmake.define.ZELDA64_BUILD_PYTHON_MODULE = "ON"
 cmake.define.ZELDA64_BUILD_SHARED = "OFF"
 cmake.define.ZELDA64_BUILD_TESTS = "OFF"
+cmake.define.CMAKE_POSITION_INDEPENDENT_CODE = "ON"
