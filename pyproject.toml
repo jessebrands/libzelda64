@@ -6,16 +6,12 @@ build-backend = "scikit_build_core.build"
 name = "zelda64"
 version = "0.1.0"
 description = "Nintendo 64 Zelda ROM manipulation library"
-requires-python = ">=3.11"
-
-[project.scripts]
-zelda64 = "zelda64.cli:main"
+requires-python = ">=3.9"
 
 [tool.scikit-build]
 minimum-version = "0.10"
 cmake.version = ">=3.26"
-wheel.py-api = "cp311"
-wheel.packages = ["python/zelda64"]
+wheel.py-api = "cp39"
 cmake.define.ZELDA64_BUILD_PYTHON_MODULE = "ON"
 cmake.define.ZELDA64_BUILD_SHARED = "OFF"
 cmake.define.ZELDA64_BUILD_TESTS = "OFF"
