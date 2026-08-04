@@ -14,3 +14,9 @@ if (ZELDA64_USE_LIBC)
             COMMAND test_io
     )
 endif ()
+
+add_executable(test_dma test_dma.c ${ZELDA64_TEST_HEADERS})
+target_link_libraries(test_dma PRIVATE zelda64::zelda64_static)
+zelda64_enable_warnings(test_dma)
+
+add_test(NAME Library.DMA COMMAND test_dma)
