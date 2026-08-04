@@ -1,5 +1,8 @@
+set(ZELDA64_TEST_HEADERS
+        check.h)
+
 if (ZELDA64_USE_LIBC)
-    add_executable(test_io test_io.c)
+    add_executable(test_io test_io.c ${ZELDA64_TEST_HEADERS})
     target_link_libraries(test_io PRIVATE zelda64::zelda64_static)
     zelda64_enable_warnings(test_io)
 

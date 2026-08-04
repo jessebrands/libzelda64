@@ -18,28 +18,11 @@
  * along with libzelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
 #include <string.h>
 
-#include "zelda64/zelda64.h"
 #include "io.h"
 
-static int failures = 0;
-
-static void check(char const* what, enum zelda64_result const got, enum zelda64_result const want) {
-    int const ok = got == want;
-    printf("%-42s %-20s %s\n", what, zelda64_result_string(got), ok ? "ok" : "FAIL");
-    if (!ok) {
-        failures += 1;
-    }
-}
-
-static void check_that(char const* what, int const ok) {
-    printf("%-42s %-20s %s\n", what, "", ok ? "ok" : "FAIL");
-    if (!ok) {
-        failures += 1;
-    }
-}
+#include "check.h"
 
 static void test_buffer(struct zelda64_allocator const allocator) {
     static uint8_t const fixture[4] = {0xCA, 0xFE, 0xBA, 0xBE};
@@ -237,7 +220,5 @@ int main(void) {
     test_buffer(allocator);
     test_buffer_data(allocator);
     test_file(allocator);
-
-    printf("\n%d failure(s)\n", failures);
-    return failures == 0 ? 0 : 1;
+    return check_report();
 }
