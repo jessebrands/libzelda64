@@ -7,7 +7,8 @@ set(ZELDA64_MODULE_SOURCES
         module.c)
 
 set(ZELDA64_MODULE_FILES
-        zelda64.pyi)
+        zelda64.pyi
+        zelda64_cli.py)
 
 python_add_library(zelda64_module MODULE WITH_SOABI USE_SABI 3.9
         ${ZELDA64_MODULE_SOURCES})

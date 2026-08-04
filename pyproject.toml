@@ -8,6 +8,9 @@ version = "0.1.0"
 description = "Nintendo 64 Zelda ROM manipulation library"
 requires-python = ">=3.9"
 
+[project.scripts]
+zelda64 = "zelda64_cli:main"
+
 [tool.scikit-build]
 minimum-version = "0.10"
 cmake.version = ">=3.26"
