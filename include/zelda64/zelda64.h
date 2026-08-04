@@ -170,6 +170,12 @@ zelda64_io_from_const_buffer(struct zelda64_io* io,
                              struct zelda64_allocator allocator);
 
 /*
+ * Gets a pointer to the data backing a buffer.
+ */
+ZELDA64_API enum zelda64_result
+zelda64_io_buffer_data(struct zelda64_io const* io, uint8_t const** data, size_t* size);
+
+/*
  * Closes an zelda64_io file, releasing its resources.
  */
 ZELDA64_API void zelda64_io_close(struct zelda64_io* io);

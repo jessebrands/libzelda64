@@ -208,3 +208,22 @@ zelda64_io_from_const_buffer(struct zelda64_io* io, uint8_t const* data, size_t 
 
     return ZELDA64_OK;
 }
+
+enum zelda64_result
+zelda64_io_buffer_data(struct zelda64_io const* io, uint8_t const** data, size_t* size) {
+    if (io == NULL || data == NULL || size == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    // A quick and simple check: if these pointers aren't set to the buffer API,
+    // then we're not dealing with a genuine io_buffer.
+    if (io->read != zelda64_io_buffer_read || io->size != zelda64_io_buffer_size) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+
+    // Retrieve a pointer to our buffer and return the size.
+    struct zelda64_io_buffer const* buffer = io->opaque;
+    *data = (uint8_t const*) buffer->data;
+    *size = buffer->size;
+
+    return ZELDA64_OK;
+}

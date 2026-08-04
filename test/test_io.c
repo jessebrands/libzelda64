@@ -102,11 +102,74 @@ static void test_buffer(struct zelda64_allocator const allocator) {
     zelda64_io_close(&io);
 }
 
+static void test_buffer_data(struct zelda64_allocator const allocator) {
+    static uint8_t const fixture[4] = {0xCA, 0xFE, 0xBA, 0xBE};
+    uint8_t const source[4] = {0xDE, 0xAD, 0xBE, 0xEF};
+    uint8_t caller[4] = {1, 2, 3, 4};
+    struct zelda64_io io = {0};
+    struct zelda64_io const zeroed = {0};
+    uint8_t const* data = NULL;
+    size_t size = 0;
+
+    puts("-- buffer_data --");
+    check("create_buffer(16)", zelda64_io_create_buffer(&io, 16, allocator), ZELDA64_OK);
+    check("write 4 at 4", zelda64_io_write(&io, 4, source, 4), ZELDA64_OK);
+    check("buffer_data", zelda64_io_buffer_data(&io, &data, &size), ZELDA64_OK);
+    check_that("  size is 16", size == 16);
+    check_that("  data is not NULL", data != NULL);
+    check_that("  sees the written bytes", data != NULL && memcmp(&data[4], source, 4) == 0);
+    check_that("  zero elsewhere", data != NULL && data[0] == 0 && data[15] == 0);
+
+    // The old pointer is not compared against, since reading a freed pointer's
+    // value is itself indeterminate; that resize reallocates is asserted by the
+    // contents surviving through whatever pointer we get back.
+    check("grow to 32", zelda64_io_resize(&io, 32), ZELDA64_OK);
+    check("buffer_data after resize", zelda64_io_buffer_data(&io, &data, &size), ZELDA64_OK);
+    check_that("  size is 32", size == 32);
+    check_that("  contents survived", data != NULL && memcmp(&data[4], source, 4) == 0);
+
+    check("buffer_data with NULL data", zelda64_io_buffer_data(&io, NULL, &size),
+          ZELDA64_INVALID_PARAMETER);
+    check("buffer_data with NULL size", zelda64_io_buffer_data(&io, &data, NULL),
+          ZELDA64_INVALID_PARAMETER);
+    check("buffer_data with NULL io", zelda64_io_buffer_data(NULL, &data, &size),
+          ZELDA64_INVALID_PARAMETER);
+    zelda64_io_close(&io);
+    check("buffer_data on closed io", zelda64_io_buffer_data(&io, &data, &size),
+          ZELDA64_INVALID_PARAMETER);
+    check("buffer_data on zeroed io", zelda64_io_buffer_data(&zeroed, &data, &size),
+          ZELDA64_INVALID_PARAMETER);
+
+    // Poison both out-params so that an empty buffer reporting (NULL, 0) is
+    // distinguishable from the function not having written to them at all.
+    data = fixture;
+    size = 99;
+    check("create_buffer(0)", zelda64_io_create_buffer(&io, 0, allocator), ZELDA64_OK);
+    check("buffer_data on empty buffer", zelda64_io_buffer_data(&io, &data, &size), ZELDA64_OK);
+    check_that("  size is 0", size == 0);
+    check_that("  data is NULL", data == NULL);
+    zelda64_io_close(&io);
+
+    check("from_const_buffer", zelda64_io_from_const_buffer(&io, fixture, 4, allocator),
+          ZELDA64_OK);
+    check("  buffer_data", zelda64_io_buffer_data(&io, &data, &size), ZELDA64_OK);
+    check_that("    hands back the caller's pointer", data == fixture);
+    check_that("    size is 4", size == 4);
+    zelda64_io_close(&io);
+
+    check("from_buffer", zelda64_io_from_buffer(&io, caller, 4, allocator), ZELDA64_OK);
+    check("  buffer_data", zelda64_io_buffer_data(&io, &data, &size), ZELDA64_OK);
+    check_that("    hands back the caller's pointer", data == caller);
+    check_that("    size is 4", size == 4);
+    zelda64_io_close(&io);
+}
+
 static void test_file(struct zelda64_allocator const allocator) {
     char const* const path = "rom_\xC3\xB8\xE6\xBC\xA2.z64";
     uint8_t const source[8] = {0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x02, 0x03, 0x04};
     struct zelda64_io io = {0};
     uint8_t scratch[32];
+    uint8_t const* data = NULL;
     size_t size = 0;
 
     puts("-- file --");
@@ -149,6 +212,10 @@ static void test_file(struct zelda64_allocator const allocator) {
     check_that("  survived round trip", memcmp(scratch, source, 4) == 0);
     check("  write refused", zelda64_io_write(&io, 0, source, 4), ZELDA64_IO_READ_ONLY);
     check("  resize refused", zelda64_io_resize(&io, 8), ZELDA64_IO_READ_ONLY);
+    // The discriminator: a file io must be rejected without its opaque being
+    // touched, which is what keeps buffer_data safe against foreign ios.
+    check("  buffer_data refused", zelda64_io_buffer_data(&io, &data, &size),
+          ZELDA64_INVALID_PARAMETER);
     zelda64_io_close(&io);
 
     check("open_readonly on missing file",
@@ -168,6 +235,7 @@ static void test_file(struct zelda64_allocator const allocator) {
 int main(void) {
     struct zelda64_allocator const allocator = zelda64_default_allocator();
     test_buffer(allocator);
+    test_buffer_data(allocator);
     test_file(allocator);
 
     printf("\n%d failure(s)\n", failures);
