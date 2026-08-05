@@ -142,6 +142,74 @@ test_valid_dma_table(struct dma_fixture* f, struct zelda64_io* io, struct arena*
     check_that("  offset is correct", table.offset == 0x30);
     check_that("  count is correct", table.count == 50);
     check_that("  size is correct", table.size == 50 * ENTRY_SIZE);
+
+    // Set some extra entries that match different kinds:
+    fixture_set(f, 3, 0x1337, 0x1337, 0x0, 0x0); // EMPTY
+    fixture_set(f, 4, 0x50, 0x60, 0x50, UINT32_MAX); // DELETED
+    fixture_set(f, 5, 0x60, 0x93, 0x60, 0x80); // COMPRESSED
+
+    struct zelda64_dma_entry e[50];
+    check("  zelda64_read_dma_table", zelda64_read_dma_table(io, &table, e, sizeof e), ZELDA64_OK);
+
+    uint32_t offset = 0;
+    uint32_t size = 0;
+
+    check_that("  e2 is uncompressed", zelda64_dma_entry_kind(&e[2]) == ZELDA64_DMA_UNCOMPRESSED);
+    check("  e2 extent", zelda64_dma_entry_extent(&e[2], &offset, &size), ZELDA64_OK);
+    check_that("  e2 offset correct", offset == 0x30);
+    check_that("  e2 size correct", size == f->size - 0x30);
+
+    check_that("  e3 is empty", zelda64_dma_entry_kind(&e[3]) == ZELDA64_DMA_EMPTY);
+    check("  e3 extent", zelda64_dma_entry_extent(&e[3], &offset, &size), ZELDA64_OK);
+    check_that("  e3 offset correct", offset == 0);
+    check_that("  e3 size correct", size == 0);
+
+    check_that("  e4 is deleted", zelda64_dma_entry_kind(&e[4]) == ZELDA64_DMA_DELETED);
+    check("  e4 extent is invalid", zelda64_dma_entry_extent(&e[4], &offset, &size), ZELDA64_INVALID_PARAMETER);
+
+    check_that("  e5 is compressed", zelda64_dma_entry_kind(&e[5]) == ZELDA64_DMA_COMPRESSED);
+    check("  e5 extent", zelda64_dma_entry_extent(&e[5], &offset, &size), ZELDA64_OK);
+    check_that("  e5 offset correct", offset == 0x60);
+    check_that("  e5 size correct", size == 0x20);
+}
+
+static void
+test_invalid_dma_table0(struct dma_fixture* f, struct zelda64_io* io, struct arena* a) {
+    (void) a;
+
+    // Zeroing out the third entry means the algorithm will never find it.
+    fixture_set(f, 2, 0, 0, 0, 0);
+    reject("  reports no DMADATA", io);
+}
+
+static void
+test_invalid_dma_table1(struct dma_fixture* f, struct zelda64_io* io, struct arena* a) {
+    (void) a;
+
+    fixture_set(f, 0, 0x0000, 0x0010, 0x0000, 0x0000);
+    fixture_set(f, 1, 0x0020, 0x0030, 0x0020, 0x0000); // Does not match expected pattern.
+
+    reject("  reports no DMADATA", io);
+}
+
+static void
+test_invalid_dma_table2(struct dma_fixture* f, struct zelda64_io* io, struct arena* a) {
+    (void) a;
+
+    // Compressed files can never match.
+    fixture_set(f, 0, 0x0000, 0x0010, 0x0000, 0x0000);
+    fixture_set(f, 1, 0x0010, 0x0030, 0x0010, 0x0000);
+    fixture_set(f, 2, 0x0030, f->size, 0x0030, 0x0064);
+
+    reject("  reports no DMADATA", io);
+}
+
+static void
+test_dma_table_beyond_bounds_fails(struct dma_fixture* f, struct zelda64_io* io, struct arena* a) {
+    (void) a;
+
+    fixture_set(f, 2, 0x0030, f->size * 2, 0x0030, 0x0000);
+    reject("  reports no DMADATA", io);
 }
 
 static void
@@ -159,6 +227,15 @@ test_little_endian_dma_table_is_rejected(struct dma_fixture* f, struct zelda64_i
 
     swap_words(f);
     reject("  is not found", io);
+}
+
+static void
+test_empty_is_invalid_param(struct dma_fixture* f, struct zelda64_io* io, struct arena* a) {
+    (void) f;
+    (void) a;
+    (void) io;
+
+    check("  is invalid parameter", zelda64_find_dma_table(io, NULL), ZELDA64_INVALID_PARAMETER);
 }
 
 typedef void (* test_func)(struct dma_fixture* f, struct zelda64_io* io, struct arena* a);
@@ -184,7 +261,12 @@ do_test(char const* name, test_func const t) {
 
 int main(void) {
     do_test("big endian dma table is found", test_valid_dma_table);
+    do_test("null argument is invalid parameter", test_empty_is_invalid_param);
     do_test("little endian dma table is not found", test_little_endian_dma_table_is_rejected);
     do_test("halfword swapped dma table is not found", test_halfword_swapped_dma_table_is_rejected);
+    do_test("invalid dma table is rejected", test_invalid_dma_table0);
+    do_test("dma table rejected if e0.vs != e1.ve", test_invalid_dma_table1);
+    do_test("dma table rejected if e0 .. e2 are compressed", test_invalid_dma_table2);
+    do_test("dma table rejected if entry 2 is bigger than rom", test_dma_table_beyond_bounds_fails);
     return check_report();
 }
