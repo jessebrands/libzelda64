@@ -199,7 +199,7 @@ test_invalid_dma_table2(struct dma_fixture* f, struct zelda64_io* io, struct are
     // Compressed files can never match.
     fixture_set(f, 0, 0x0000, 0x0010, 0x0000, 0x0000);
     fixture_set(f, 1, 0x0010, 0x0030, 0x0010, 0x0000);
-    fixture_set(f, 2, 0x0030, f->size, 0x0030, 0x0064);
+    fixture_set(f, 2, 0x0030, (uint32_t) f->size, 0x0030, 0x0064);
 
     reject("  reports no DMADATA", io);
 }
@@ -208,7 +208,7 @@ static void
 test_dma_table_beyond_bounds_fails(struct dma_fixture* f, struct zelda64_io* io, struct arena* a) {
     (void) a;
 
-    fixture_set(f, 2, 0x0030, f->size * 2, 0x0030, 0x0000);
+    fixture_set(f, 2, 0x0030, (uint32_t) (f->size * 2), 0x0030, 0x0000);
     reject("  reports no DMADATA", io);
 }
 
@@ -248,8 +248,9 @@ do_test(char const* name, test_func const t) {
     fixture_init(&f, 0x10, 0x20, 50);
 
     printf("\n%s\n", name);
-    if (zelda64_io_from_const_buffer(&io, f.data, f.size, arena_allocator(&a)) != ZELDA64_OK) {
-        printf("  == TEST ERROR ==\n");
+    enum zelda64_result const r = zelda64_io_from_const_buffer(&io, f.data, f.size, arena_allocator(&a));
+    if (r != ZELDA64_OK) {
+        check("  zelda64_io_from_const_buffer", r, ZELDA64_OK);
         return;
     }
 
