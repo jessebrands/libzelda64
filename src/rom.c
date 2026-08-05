@@ -20,13 +20,11 @@
 
 #include <string.h>
 
+#include "bytes.h"
 #include "crc32.h"
-#include "io.h"
 #include "rom.h"
 #include "zelda64/zelda64.h"
 
-
-#define CHUNK_SIZE          0x200
 #define CIC_DETECT_START    0x40
 #define CIC_DETECT_END      0x1000
 
@@ -58,62 +56,55 @@ entry_point_for(uint32_t const boot_address, enum zelda64_cic const cic) {
     return boot_address;
 }
 
-static void
-decode_header(struct zelda64_rom_header* header, uint8_t const* chunk) {
+enum zelda64_result
+zelda64_read_rom_header(struct zelda64_rom_header* header, uint8_t const* data, size_t const size) {
+    if (header == NULL || data == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    if (size < ZELDA64_ROM_HEADER_SIZE) {
+        return ZELDA64_OUT_OF_RANGE;
+    }
     // @formatter:off
-    header->reserved0        = chunk[ROM_OFFSET_RESERVED0];
-    memcpy(header->pi_config, &chunk[ROM_OFFSET_PI_CONFIG], sizeof header->pi_config);
-    header->clock_rate       = zelda64_read_u32(&chunk[ROM_OFFSET_CLOCK_RATE]);
-    header->boot_address     = zelda64_read_u32(&chunk[ROM_OFFSET_BOOT_ADDRESS]);
-    header->libultra_version = zelda64_read_u32(&chunk[ROM_OFFSET_LIBULTRA_VERSION]);
-    header->check_code       = zelda64_read_u64(&chunk[ROM_OFFSET_CHECK_CODE]);
-    memcpy(header->reserved1, &chunk[ROM_OFFSET_RESERVED1], sizeof header->reserved1);
-    memcpy(header->title,     &chunk[ROM_OFFSET_TITLE],     sizeof header->title);
-    memcpy(header->reserved2, &chunk[ROM_OFFSET_RESERVED2], sizeof header->reserved2);
-    memcpy(header->game_code, &chunk[ROM_OFFSET_GAME_CODE], sizeof header->game_code);
-    header->version          = chunk[ROM_OFFSET_VERSION];
+    header->reserved0        = data[ROM_OFFSET_RESERVED0];
+    memcpy(header->pi_config, &data[ROM_OFFSET_PI_CONFIG], sizeof header->pi_config);
+    header->clock_rate       = zelda64_read_u32(&data[ROM_OFFSET_CLOCK_RATE]);
+    header->boot_address     = zelda64_read_u32(&data[ROM_OFFSET_BOOT_ADDRESS]);
+    header->libultra_version = zelda64_read_u32(&data[ROM_OFFSET_LIBULTRA_VERSION]);
+    uint32_t const cc_high   = zelda64_read_u32(&data[ROM_OFFSET_CHECK_CODE]);
+    uint32_t const cc_low    = zelda64_read_u32(&data[ROM_OFFSET_CHECK_CODE + 0x04]);
+    header->check_code       = ((uint64_t) cc_high << 32) | ((uint64_t) cc_low);
+    memcpy(header->reserved1, &data[ROM_OFFSET_RESERVED1], sizeof header->reserved1);
+    memcpy(header->title,     &data[ROM_OFFSET_TITLE],     sizeof header->title);
+    memcpy(header->reserved2, &data[ROM_OFFSET_RESERVED2], sizeof header->reserved2);
+    memcpy(header->game_code, &data[ROM_OFFSET_GAME_CODE], sizeof header->game_code);
+    header->version          = data[ROM_OFFSET_VERSION];
     // @formatter:on
+    return ZELDA64_OK;
 }
 
 enum zelda64_result
-zelda64_read_rom_info(struct zelda64_io const* rom, struct zelda64_rom_info* info) {
-    if (info == NULL) {
+zelda64_read_rom_info(struct zelda64_rom_info* info, uint8_t const* data, size_t const size) {
+    if (info == NULL || data == NULL) {
         return ZELDA64_INVALID_PARAMETER;
+    }
+    if (size < CIC_DETECT_END) {
+        return ZELDA64_OUT_OF_RANGE;
     }
 
     *info = (struct zelda64_rom_info){0};
 
-    uint8_t chunk[CHUNK_SIZE];
-    enum zelda64_result result = zelda64_io_read(rom, 0, chunk, ROM_HEADER_SIZE);
+    enum zelda64_result const result = zelda64_read_rom_header(&info->header, data, size);
     if (result != ZELDA64_OK) {
         return result;
     }
 
-    decode_header(&info->header, chunk);
-    uint32_t const magic = zelda64_read_u32(chunk);
-
-    uint32_t crc = 0;
-    size_t offset = CIC_DETECT_START;
-    while (offset < CIC_DETECT_END) {
-        size_t const remaining = CIC_DETECT_END - offset;
-        size_t const want = remaining < sizeof chunk ? remaining : sizeof chunk;
-
-        result = zelda64_io_read(rom, offset, chunk, want);
-        if (result != ZELDA64_OK) {
-            return result;
-        }
-
-        crc = zelda64_crc32(crc, chunk, want);
-        offset += want;
-    }
+    uint32_t const crc = zelda64_crc32(0, &data[CIC_DETECT_START], CIC_DETECT_END - CIC_DETECT_START);
 
     info->ipl_checksum = crc;
     info->cic = cic_for_crc32(crc);
     info->entrypoint = entry_point_for(info->header.boot_address, info->cic);
 
-    return magic == ROM_MAGIC
-               ? ZELDA64_OK
-               : ZELDA64_BAD_HEADER;
+    return ZELDA64_OK;
 }
 
 char const*

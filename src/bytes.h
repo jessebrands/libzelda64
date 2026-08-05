@@ -1,5 +1,5 @@
 /*
- * io.h: input/output abstraction
+ * bytes.h: byte manipulation functions
  * Copyright (C) 2026 Jesse Gerard Brands
  *
  * This file is part of libzelda64.
@@ -18,30 +18,29 @@
  * along with libzelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ZELDA64_IO_H
-#define ZELDA64_IO_H
+#ifndef ZELDA64_BYTES_H
+#define ZELDA64_BYTES_H
 
-#include <stddef.h>
 #include <stdint.h>
 
-#include "zelda64/zelda64.h"
+static inline uint32_t
+zelda64_swap_uint32(uint32_t const x) {
+    // @formatter:off
+    return ((x >> 24) & 0x000000FF) |
+           ((x >> 8)  & 0x0000FF00) |
+           ((x << 8)  & 0x00FF0000) |
+           ((x << 24) & 0xFF000000);
+    // @formatter:on
+}
 
 static inline uint32_t
 zelda64_read_u32(uint8_t const* p) {
-    return (uint32_t) p[0] << 24 | (uint32_t) p[1] << 16
-         | (uint32_t) p[2] << 8  | (uint32_t) p[3];
+    // @formatter:off
+    return ((uint32_t) p[0] << 24)
+         | ((uint32_t) p[1] << 16)
+         | ((uint32_t) p[2] << 8)
+         | ((uint32_t) p[3]);
+    // @formatter:on
 }
 
-static inline uint64_t
-zelda64_read_u64(uint8_t const* p) {
-    return (uint64_t) zelda64_read_u32(p) << 32 | zelda64_read_u32(&p[4]);
-}
-
-typedef void (*zelda64_io_destroy_func) (void* opaque);
-
-struct zelda64_io_state {
-    struct zelda64_allocator allocator;
-    zelda64_io_destroy_func close;
-};
-
-#endif //ZELDA64_IO_H
+#endif //ZELDA64_BYTES_H

@@ -21,11 +21,8 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#include "io.h"
+#include "bytes.h"
 #include "zelda64/zelda64.h"
-
-#define CHUNK_SIZE 512u
-#define DMA_ENTRY_SIZE 0x10u
 
 static struct zelda64_dma_entry
 read_entry_unsafe(uint8_t const* data) {
@@ -37,141 +34,109 @@ read_entry_unsafe(uint8_t const* data) {
     };
 }
 
-static bool
+static inline bool
 can_be_makerom_entry(struct zelda64_dma_entry const entry) {
     return entry.vrom_start == 0 && entry.vrom_end != 0
            && entry.rom_start == 0 && entry.rom_end == 0;
 }
 
 enum zelda64_result
-zelda64_find_dma_table(struct zelda64_io const* rom, struct zelda64_dma_table* table) {
-    // let A = size of MAKEROM
-    // let B = size of BOOTCODE
-    // let C = size of DMADATA
-    //
-    //           vrom_start  vrom_end    rom_start   rom_end       filename
-    //     0x00  0x00000000  A           0x00000000  0x00000000    MAKEROM
-    //     0x01  A           A+B         A           0x00000000    BOOTCODE
-    //     0x02  A+B         A+B+C       A+B         0x00000000    DMADATA
-    //
-    // DMADATA offset        =   A+B
-    // DMADATA size in bytes =  (A+B+C) - (A+B)
-    // DMADATA entry count   = ((A+B+C) - (A+B)) / 16
-
-    if (table == NULL) {
+zelda64_find_dmadata_start(uint8_t const* data, size_t const size, size_t* offset) {
+    if (data == NULL || offset == NULL) {
         return ZELDA64_INVALID_PARAMETER;
     }
 
-    uint8_t chunk[CHUNK_SIZE];
-    size_t offset = 0;
-    size_t rom_size;
+    // The DMADATA starts with the entry for MAKEROM. We don't know how big the
+    // MAKEROM really is, so we're going to get some false positives.
+    for (size_t i = 0; i < size / ZELDA64_DMA_ENTRY_SIZE; ++i) {
+        size_t const position = i * ZELDA64_DMA_ENTRY_SIZE;
+        struct zelda64_dma_entry const entry = read_entry_unsafe(&data[position]);
 
-    *table = (struct zelda64_dma_table){0};
-
-    enum zelda64_result result = zelda64_io_size(rom, &rom_size);
-    if (result != ZELDA64_OK) {
-        return result;
-    }
-
-    while (true) {
-        if (offset >= rom_size) {
-            return ZELDA64_NO_DMADATA;
-        }
-
-        size_t const remaining = rom_size - offset;
-        size_t const want = remaining < sizeof chunk ? remaining : sizeof chunk;
-
-        result = zelda64_io_read(rom, offset, chunk, want);
-        if (result != ZELDA64_OK) {
-            return result;
-        }
-
-        for (size_t i = 0; i + DMA_ENTRY_SIZE <= want; i += DMA_ENTRY_SIZE) {
-            struct zelda64_dma_entry const e0 = read_entry_unsafe(&chunk[i]);
-            if (!can_be_makerom_entry(e0)) {
-                continue;
-            }
-
-            // The signature at `i` could be a MAKEROM entry.
-            size_t const match_pos = offset + i;
-            size_t const e1_pos = match_pos + DMA_ENTRY_SIZE;
-            uint8_t data[DMA_ENTRY_SIZE * 2];
-
-            result = zelda64_io_read(rom, e1_pos, data, sizeof data);
-            if (result != ZELDA64_OK) {
-                return result == ZELDA64_IO_END_OF_FILE
-                           ? ZELDA64_NO_DMADATA
-                           : result;
-            }
-
-            struct zelda64_dma_entry const e1 = read_entry_unsafe(&data[0]);
-            struct zelda64_dma_entry const e2 = read_entry_unsafe(&data[DMA_ENTRY_SIZE]);
-
-            bool const e1_is_bootcode = e1.vrom_start == e0.vrom_end
-                                        && e1.rom_start == e0.vrom_end
-                                        && e1.rom_end == 0;
-
-            bool const e2_is_dmadata = e2.vrom_start == e1.vrom_end
-                                       && e2.rom_start == e1.vrom_end
-                                       && e2.rom_end == 0
-                                       && e2.vrom_start == match_pos;
-
-            if (!e1_is_bootcode || !e2_is_dmadata) {
-                continue;
-            }
-
-            // Check to make sure that end > start and that the range is
-            // aligned to 16 bytes, as an extra safety check.
-            uint32_t const span = e2.vrom_end - e2.vrom_start;
-            if (e2.vrom_end > rom_size || e2.vrom_end <= e2.vrom_start || span % DMA_ENTRY_SIZE != 0) {
-                continue;
-            }
-
-            // With certainty, we can say this is the DMADATA entry.
-            *table = (struct zelda64_dma_table){
-                .offset = e2.vrom_start,
-                .size = span,
-                .count = span / DMA_ENTRY_SIZE,
-            };
-
+        if (can_be_makerom_entry(entry)) {
+            *offset = position;
             return ZELDA64_OK;
         }
-
-        offset += want;
     }
+
+    return ZELDA64_NO_DMADATA;
 }
 
-enum zelda64_result zelda64_read_dma_table(struct zelda64_io const* rom,
-                                           struct zelda64_dma_table const* table,
-                                           struct zelda64_dma_entry* entries,
-                                           size_t const count) {
-    if (table == NULL || entries == NULL) {
+enum zelda64_result
+zelda64_read_dmadata_info(struct zelda64_dmadata_info* info, uint8_t const* data, size_t const size) {
+    if (info == NULL || data == NULL) {
         return ZELDA64_INVALID_PARAMETER;
     }
-    if (count < table->count) {
+    if (size < ZELDA64_DMA_ENTRY_SIZE * 3) {
         return ZELDA64_OUT_OF_RANGE;
     }
 
-    size_t const total = table->count * DMA_ENTRY_SIZE;
-    size_t bytes_in = 0;
-    uint8_t chunk[CHUNK_SIZE];
+    /*
+     * In short, we're looking for a certain signature.
+     *
+     * let A = size of MAKEROM
+     * let B = size of BOOTCODE
+     * let C = size of DMADATA
+     *
+     *           vrom_start  vrom_end    rom_start   rom_end       filename
+     *     0x00  0x00000000  A           0x00000000  0x00000000    MAKEROM
+     *     0x01  A           A+B         A           0x00000000    BOOTCODE
+     *     0x02  A+B         A+B+C       A+B         0x00000000    DMADATA
+     *
+     * DMADATA offset        =   A+B
+     * DMADATA size in bytes =  (A+B+C) - (A+B)
+     * DMADATA entry count   = ((A+B+C) - (A+B)) / 16
+     */
 
-    while (bytes_in < total) {
-        size_t const remaining = total - bytes_in;
-        size_t const want = remaining < sizeof chunk ? remaining : sizeof chunk;
-        size_t const cursor = table->offset + bytes_in;
+    struct zelda64_dma_entry const e0 = read_entry_unsafe(&data[ZELDA64_DMA_ENTRY_SIZE * 0]);
+    struct zelda64_dma_entry const e1 = read_entry_unsafe(&data[ZELDA64_DMA_ENTRY_SIZE * 1]);
+    struct zelda64_dma_entry const e2 = read_entry_unsafe(&data[ZELDA64_DMA_ENTRY_SIZE * 2]);
 
-        enum zelda64_result const result = zelda64_io_read(rom, cursor, chunk, want);
-        if (result != ZELDA64_OK) {
-            return result;
-        }
+    if (!can_be_makerom_entry(e0)) {
+        return ZELDA64_NO_DMADATA;
+    }
 
-        for (size_t i = 0; i < want; i += DMA_ENTRY_SIZE) {
-            size_t const entry = (bytes_in + i) / DMA_ENTRY_SIZE;
-            entries[entry] = read_entry_unsafe(&chunk[i]);
-        }
+    bool const e1_is_bootcode = e1.vrom_start == e0.vrom_end
+                                && e1.rom_start == e0.vrom_end
+                                && e1.rom_end == 0;
 
-        bytes_in += want;
+    bool const e2_is_dmadata = e2.vrom_start == e1.vrom_end
+                               && e2.rom_start == e1.vrom_end
+                               && e2.rom_end == 0;
+
+    if (!e1_is_bootcode || !e2_is_dmadata) {
+        return ZELDA64_NO_DMADATA;
+    }
+
+    // At this point we're already 99% certain, but just in case, just check
+    // that this entry actually describes something that could be DMADATA.
+    uint32_t const span = e2.vrom_end - e2.vrom_start;
+    if (e2.vrom_end <= e2.vrom_start || span % ZELDA64_DMA_ENTRY_SIZE != 0) {
+        return ZELDA64_NO_DMADATA;
+    }
+
+    // As far as we can tell, this is DMADATA!
+    *info = (struct zelda64_dmadata_info){
+        .offset = e2.vrom_start,
+        .size = span,
+        .count = span / ZELDA64_DMA_ENTRY_SIZE,
+    };
+
+    return ZELDA64_OK;
+}
+
+enum zelda64_result
+zelda64_read_dmadata(struct zelda64_dma_entry* entries, size_t const count,
+                     uint8_t const* data, size_t const size) {
+    if (entries == NULL || data == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    if (count > size / ZELDA64_DMA_ENTRY_SIZE) {
+        return ZELDA64_OUT_OF_RANGE;
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        size_t const position = i * ZELDA64_DMA_ENTRY_SIZE;
+        entries[i] = read_entry_unsafe(&data[position]);
     }
 
     return ZELDA64_OK;

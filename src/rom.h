@@ -21,12 +21,9 @@
 #ifndef ZELDA64_ROM_H
 #define ZELDA64_ROM_H
 
-// Not a real magic, but a sort-of expected series of bytes at the start of
-// most commercial ROMs.  Never use this as real proof, btw.
-#define ROM_MAGIC                      0x80371240u
-#define ROM_HEADER_SIZE                0x40
-
-// Offsets in the IPL3 MAKEROM for specific values.
+/*
+ * Offsets in the IPL3 MAKEROM for specific values.
+ */
 #define ROM_OFFSET_RESERVED0           0x00
 #define ROM_OFFSET_PI_CONFIG           0x01
 #define ROM_OFFSET_CLOCK_RATE          0x04
