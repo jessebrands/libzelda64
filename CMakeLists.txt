@@ -80,7 +80,7 @@ if (ZELDA64_BUILD_SHARED)
     zelda64_enable_warnings(zelda64)
 endif ()
 
-if (ZELDA64_BUILD_STATIC OR ZELDA64_BUILD_TESTS)
+if (ZELDA64_BUILD_STATIC)
     add_library(zelda64_static STATIC
             ${ZELDA64_SOURCES}
             ${ZELDA64_PUBLIC_HEADERS}
