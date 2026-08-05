@@ -48,14 +48,13 @@ zelda64_find_dmadata_start(uint8_t const* data, size_t const size, size_t* offse
 
     // The DMADATA starts with the entry for MAKEROM. We don't know how big the
     // MAKEROM really is, so we're going to get some false positives.
-    for (size_t i = 0; i < size / ZELDA64_DMA_ENTRY_SIZE; ++i) {
-        size_t const position = i * ZELDA64_DMA_ENTRY_SIZE;
-        struct zelda64_dma_entry const entry = read_entry_unsafe(&data[position]);
-
+    while (*offset + ZELDA64_DMA_ENTRY_SIZE <= size) {
+        struct zelda64_dma_entry const entry = read_entry_unsafe(&data[*offset]);
         if (can_be_makerom_entry(entry)) {
-            *offset = position;
             return ZELDA64_OK;
         }
+
+        *offset += 16;
     }
 
     return ZELDA64_NO_DMADATA;
@@ -69,6 +68,8 @@ zelda64_read_dmadata_info(struct zelda64_dmadata_info* info, uint8_t const* data
     if (size < ZELDA64_DMA_ENTRY_SIZE * 3) {
         return ZELDA64_OUT_OF_RANGE;
     }
+
+    *info = (struct zelda64_dmadata_info){0};
 
     /*
      * In short, we're looking for a certain signature.
