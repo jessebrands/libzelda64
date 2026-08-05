@@ -55,7 +55,8 @@ put_u32(uint8_t* p, uint32_t const value) {
 static void swap_halfwords(struct dma_fixture* f) {
     for (size_t i = 0; i + 1 < f->size; i += 2) {
         uint8_t const t = f->data[i];
-        f->data[i] = f->data[i + 1]; f->data[i + 1] = t;
+        f->data[i] = f->data[i + 1];
+        f->data[i + 1] = t;
     }
 }
 
@@ -65,8 +66,12 @@ static void swap_halfwords(struct dma_fixture* f) {
 static void swap_words(struct dma_fixture* f) {
     for (size_t i = 0; i + 3 < f->size; i += 4) {
         uint8_t t;
-        t = f->data[i];     f->data[i]     = f->data[i+3]; f->data[i+3] = t;
-        t = f->data[i + 1]; f->data[i + 1] = f->data[i+2]; f->data[i+2] = t;
+        t = f->data[i];
+        f->data[i] = f->data[i + 3];
+        f->data[i + 3] = t;
+        t = f->data[i + 1];
+        f->data[i + 1] = f->data[i + 2];
+        f->data[i + 2] = t;
     }
 }
 
@@ -121,67 +126,65 @@ fixture_init(struct dma_fixture* f, uint32_t const makerom,
  * Test helper.
  */
 static void
-reject(char const* what, struct dma_fixture const* f, struct zelda64_allocator const alloc) {
-    struct zelda64_io io = {0};
+reject(char const* what, struct zelda64_io* io) {
     struct zelda64_dma_table table;
-    check("  from_const_buffer", zelda64_io_from_const_buffer(&io, f->data, f->size, alloc), ZELDA64_OK);
-    check(what, zelda64_find_dma_table(&io, &table), ZELDA64_NO_DMADATA);
-    zelda64_io_close(&io);
+    check(what, zelda64_find_dma_table(io, &table), ZELDA64_NO_DMADATA);
 }
 
 static void
-test_valid_dma_table(void) {
-    // Set up.
-    struct arena a = {storage.bytes, sizeof storage.bytes, 0, 0};
-    struct dma_fixture f = {0};
-    fixture_init(&f, 0x10, 0x20, 50);
+test_valid_dma_table(struct dma_fixture* f, struct zelda64_io* io, struct arena* a) {
+    (void) a;
+    (void) f;
 
-    // Test
-    struct zelda64_io io = {0};
     struct zelda64_dma_table table;
 
-    printf("\ntest_valid_dma_table\n");
-    check("  from_const_buffer", zelda64_io_from_const_buffer(&io, f.data, f.size, arena_allocator(&a)), ZELDA64_OK);
-    check("  zelda64_find_dma_table", zelda64_find_dma_table(&io, &table), ZELDA64_OK);
+    check("  zelda64_find_dma_table", zelda64_find_dma_table(io, &table), ZELDA64_OK);
     check_that("  offset is correct", table.offset == 0x30);
     check_that("  count is correct", table.count == 50);
     check_that("  size is correct", table.size == 50 * ENTRY_SIZE);
+}
 
-    // Teardown
+static void
+test_halfword_swapped_dma_table_is_rejected(struct dma_fixture* f, struct zelda64_io* io, struct arena* a) {
+    (void) a;
+
+    swap_halfwords(f);
+    reject("  is not found", io);
+}
+
+static void
+test_little_endian_dma_table_is_rejected(struct dma_fixture* f, struct zelda64_io* io, struct arena* a) {
+    (void) a;
+    (void) io;
+
+    swap_words(f);
+    reject("  is not found", io);
+}
+
+typedef void (* test_func)(struct dma_fixture* f, struct zelda64_io* io, struct arena* a);
+
+static void
+do_test(char const* name, test_func const t) {
+    struct arena a = {storage.bytes, sizeof storage.bytes, 0, 0};
+    struct dma_fixture f = {0};
+    struct zelda64_io io = {0};
+    fixture_init(&f, 0x10, 0x20, 50);
+
+    printf("\n%s\n", name);
+    if (zelda64_io_from_const_buffer(&io, f.data, f.size, arena_allocator(&a)) != ZELDA64_OK) {
+        printf("  == TEST ERROR ==\n");
+        return;
+    }
+
+    t(&f, &io, &a);
     zelda64_io_close(&io);
 
-    check_that("  all pointers freed", a.live == 0);
-}
-
-static void
-test_halfword_swapped_dma_table_is_rejected(void) {
-    struct arena a = {storage.bytes, sizeof storage.bytes, 0, 0};
-    struct dma_fixture f = {0};
-    fixture_init(&f, 0x10, 0x20, 50);
-    swap_halfwords(&f);
-
-    // Swap the ROM
-    printf("\ntest_halfword_swapped_rom_is_rejected\n");
-    reject("  is not found", &f, arena_allocator(&a));
-    check_that("  all pointers freed", a.live == 0);
-}
-
-static void
-test_little_endian_dma_table_is_rejected(void) {
-    struct arena a = {storage.bytes, sizeof storage.bytes, 0, 0};
-    struct dma_fixture f = {0};
-    fixture_init(&f, 0x10, 0x20, 50);
-    swap_words(&f);
-
-    // Swap the ROM
-    printf("\ntest_little_endian_rom_is_rejected\n");
-    reject("  is not found", &f, arena_allocator(&a));
-    check_that("  all pointers freed", a.live == 0);
+    check_that("  all memory released", a.live == 0);
 }
 
 int main(void) {
-    test_valid_dma_table();
-    test_halfword_swapped_dma_table_is_rejected();
-    test_little_endian_dma_table_is_rejected();
+    do_test("big endian dma table is found", test_valid_dma_table);
+    do_test("little endian dma table is not found", test_little_endian_dma_table_is_rejected);
+    do_test("halfword swapped dma table is not found", test_halfword_swapped_dma_table_is_rejected);
     return check_report();
 }
