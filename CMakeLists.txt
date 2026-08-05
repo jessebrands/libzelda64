@@ -18,6 +18,11 @@ set(CMAKE_C_EXTENSIONS OFF)
 option(ZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
 option(ZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
 
+#
+# Utility settings
+#
+option(ZELDA64_BUILD_UTILITIES "Enable building utility binaries" ON)
+
 set(ZELDA64_PUBLIC_HEADERS
         include/zelda64/zelda64.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h)
@@ -80,7 +85,7 @@ if (ZELDA64_BUILD_SHARED)
     zelda64_enable_warnings(zelda64)
 endif ()
 
-if (ZELDA64_BUILD_STATIC)
+if (ZELDA64_BUILD_STATIC OR ZELDA64_BUILD_UTILITIES)
     add_library(zelda64_static STATIC
             ${ZELDA64_SOURCES}
             ${ZELDA64_PUBLIC_HEADERS}
@@ -99,4 +104,8 @@ if (ZELDA64_BUILD_STATIC)
             DEBUG_POSTFIX "d")
 
     zelda64_enable_warnings(zelda64_static)
+endif ()
+
+if (ZELDA64_BUILD_UTILITIES)
+    add_subdirectory("utils")
 endif ()
