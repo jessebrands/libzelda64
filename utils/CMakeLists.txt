@@ -1,5 +1,7 @@
 add_executable(decompress
-        decompress.c)
+        decompress.c
+        rom.c
+        rom.h)
 
 target_link_libraries(decompress
         PRIVATE zelda64::zelda64_static)
