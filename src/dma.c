@@ -61,7 +61,8 @@ zelda64_find_dmadata_start(uint8_t const* data, size_t const size, size_t* offse
 }
 
 enum zelda64_result
-zelda64_read_dmadata_info(struct zelda64_dmadata_info* info, uint8_t const* data, size_t const size) {
+zelda64_read_dmadata_info(struct zelda64_dmadata_info* info, size_t const offset, size_t const rom_size,
+                          uint8_t const* data, size_t const size) {
     if (info == NULL || data == NULL) {
         return ZELDA64_INVALID_PARAMETER;
     }
@@ -108,10 +109,19 @@ zelda64_read_dmadata_info(struct zelda64_dmadata_info* info, uint8_t const* data
         return ZELDA64_NO_DMADATA;
     }
 
+    // The chain must be non-decreasing, and must fit inside the ROM.
+    if (e1.vrom_end < e1.vrom_start || e2.vrom_end > rom_size) {
+        return ZELDA64_NO_DMADATA;
+    }
+
     // At this point we're already 99% certain, but just in case, just check
     // that this entry actually describes something that could be DMADATA.
+    if (e2.vrom_end <= e2.vrom_start || e2.vrom_start != offset) {
+        return ZELDA64_NO_DMADATA;
+    }
+
     uint32_t const span = e2.vrom_end - e2.vrom_start;
-    if (e2.vrom_end <= e2.vrom_start || span % ZELDA64_DMA_ENTRY_SIZE != 0) {
+    if (span % ZELDA64_DMA_ENTRY_SIZE != 0) {
         return ZELDA64_NO_DMADATA;
     }
 

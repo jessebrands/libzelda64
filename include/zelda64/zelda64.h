@@ -127,15 +127,44 @@ zelda64_read_rom_info(struct zelda64_rom_info* info, uint8_t const* data, size_t
 ZELDA64_API char const*
 zelda64_cic_name(enum zelda64_cic cic);
 
-/*
- * Seeks the start offset of a potential DMA table.
- * See `zelda64_read_dmadata_info`.
+/*!
+ * \brief Searches for the start of DMADATA in a buffer.
+ *
+ * \param data Buffer to search in.
+ * \param size Size of the buffer in bytes.
+ * \param offset A pointer to an offset in the buffer to start searching for.
+ *               The pointer will be set to the last search position.
+ * \return ZELDA64_OK if
+ * \note The buffer start must be aligned to 16 bytes in the ROM.
+ * \note A buffer can have multiple candidates, use
+ *       \ref zelda64_read_dmadata_info to check if the found offset is truly
+ *       DMADATA.
  */
 ZELDA64_API enum zelda64_result
 zelda64_find_dmadata_start(uint8_t const* data, size_t size, size_t* offset);
 
+/*!
+ * \brief Read the DMADATA info from a buffer.
+ *
+ * This function attempts to read information about DMADATA from the buffer
+ * given at data. It does this by checking if the first 3 DMA entries in the
+ * buffer match an expected signature.
+ *
+ * If the signature is a match, the function will perform a series of checks
+ * to confirm that the data is DMADATA.
+ *
+ * \param info A pointer to a \ref zelda64_dmadata_info that receives
+ *             information about the DMA table.
+ * \param offset The absolute offset in the ROM where data is.
+ * \param rom_size Size of the ROM in bytes.
+ * \param data Pointer to the buffer to read from.
+ * \param size Size of the buffer at data.
+ * \return \ref ZELDA64_OK if a DMA table could be read from data.
+ * \note This function always check from the beginning of data, offset is used
+ *       to check the signature of the DMADATA and is not an offset into data.
+ */
 ZELDA64_API enum zelda64_result
-zelda64_read_dmadata_info(struct zelda64_dmadata_info* info,
+zelda64_read_dmadata_info(struct zelda64_dmadata_info* info, size_t offset, size_t rom_size,
                           uint8_t const* data, size_t size);
 
 ZELDA64_API enum zelda64_result

@@ -30,6 +30,15 @@ find_dma_table(FILE* f, struct zelda64_dmadata_info* info) {
         return ZELDA64_INVALID_PARAMETER;
     }
 
+    // We need the file size later for a sanity check.
+    fseek(f, 0, SEEK_END);
+    long int const file_size = ftell(f);
+    if (file_size < 0) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+
+    size_t const rom_size = (size_t) file_size;
+
     // Start from the beginning of the ROM
     size_t offset = 0;
 
@@ -60,12 +69,8 @@ find_dma_table(FILE* f, struct zelda64_dmadata_info* info) {
                 return ZELDA64_NO_DMADATA;
             }
 
-            if (zelda64_read_dmadata_info(info, entries, ZELDA64_DMA_ENTRY_SIZE * 3) != ZELDA64_OK) {
-                seek_pos += ZELDA64_DMA_ENTRY_SIZE; // This entry ain't it.
-                continue;
-            }
-
-            if (info->offset != dma_start) {
+            // Attempt to read info about DMADATA.
+            if (zelda64_read_dmadata_info(info, dma_start, rom_size, entries, sizeof entries) != ZELDA64_OK) {
                 seek_pos += ZELDA64_DMA_ENTRY_SIZE; // This entry ain't it.
                 continue;
             }
@@ -149,7 +154,7 @@ enum zelda64_result zelda64_open_rom(struct zelda64_rom* rom, FILE* file) {
     // Allocate a temporary buffer for the MAKEROM, which is the first entry
     // in the DMADATA.
     struct zelda64_dma_entry const* makerom_entry = &rom->dma[0];
-    result =  read_rom_info(rom, makerom_entry, file);
+    result = read_rom_info(rom, makerom_entry, file);
     if (result != ZELDA64_OK) {
         goto cleanup_dma_table;
     }
