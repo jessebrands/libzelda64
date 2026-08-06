@@ -134,7 +134,7 @@ zelda64_cic_name(enum zelda64_cic cic);
  * \param size Size of the buffer in bytes.
  * \param offset A pointer to an offset in the buffer to start searching for.
  *               The pointer will be set to the last search position.
- * \return ZELDA64_OK if
+ * \return ZELDA64_OK if a potential match is found.
  * \note The buffer start must be aligned to 16 bytes in the ROM.
  * \note A buffer can have multiple candidates, use
  *       \ref zelda64_read_dmadata_info to check if the found offset is truly
