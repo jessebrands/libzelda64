@@ -48,13 +48,13 @@ zelda64_find_dmadata_start(uint8_t const* data, size_t const size, size_t* offse
 
     // The DMADATA starts with the entry for MAKEROM. We don't know how big the
     // MAKEROM really is, so we're going to get some false positives.
-    while (*offset + ZELDA64_DMA_ENTRY_SIZE <= size) {
+    while (*offset < size && size - *offset >= ZELDA64_DMA_ENTRY_SIZE) {
         struct zelda64_dma_entry const entry = read_entry_unsafe(&data[*offset]);
         if (can_be_makerom_entry(entry)) {
             return ZELDA64_OK;
         }
 
-        *offset += 16;
+        *offset += ZELDA64_DMA_ENTRY_SIZE;
     }
 
     return ZELDA64_NO_DMADATA;
