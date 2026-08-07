@@ -18,8 +18,8 @@
  * along with libzelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ZELDA64_BYTES_H
-#define ZELDA64_BYTES_H
+#ifndef LIBZELDA64_BYTES_H
+#define LIBZELDA64_BYTES_H
 
 #include <stdint.h>
 
@@ -43,4 +43,4 @@ zelda64_read_u32(uint8_t const* p) {
     // @formatter:on
 }
 
-#endif //ZELDA64_BYTES_H
+#endif //LIBZELDA64_BYTES_H

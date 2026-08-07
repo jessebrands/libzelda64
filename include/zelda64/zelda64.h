@@ -18,8 +18,8 @@
  * along with libzelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ZELDA64_ZELDA64_H
-#define ZELDA64_ZELDA64_H
+#ifndef LIBZELDA64_ZELDA64_H
+#define LIBZELDA64_ZELDA64_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -197,4 +197,4 @@ zelda64_dma_entry_extent(struct zelda64_dma_entry const* entry,
 extern "C" {
 #endif
 
-#endif //ZELDA64_ZELDA64_H
+#endif //LIBZELDA64_ZELDA64_H

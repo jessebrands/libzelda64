@@ -18,8 +18,8 @@
  * along with libzelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ZELDA64_ROM_H
-#define ZELDA64_ROM_H
+#ifndef LIBZELDA64_ROM_H
+#define LIBZELDA64_ROM_H
 
 /*
  * Offsets in the IPL3 MAKEROM for specific values.
@@ -37,4 +37,4 @@
 #define ROM_OFFSET_VERSION             0x3F
 #define ROM_OFFSET_BOOTCODE            0x40
 
-#endif //ZELDA64_ROM_H
+#endif //LIBZELDA64_ROM_H

@@ -18,8 +18,8 @@
  * along with libzelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ZELDA64_CRC32_H
-#define ZELDA64_CRC32_H
+#ifndef LIBZELDA64_CRC32_H
+#define LIBZELDA64_CRC32_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -29,4 +29,4 @@
  */
 uint32_t zelda64_crc32(uint32_t crc, uint8_t const* data, size_t size);
 
-#endif //ZELDA64_CRC32_H
+#endif //LIBZELDA64_CRC32_H
