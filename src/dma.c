@@ -179,6 +179,28 @@ zelda64_read_dmadata(struct zelda64_dma_entry* entries, size_t const count,
     return ZELDA64_OK;
 }
 
+enum zelda64_result
+zelda64_write_dmadata(uint8_t* data, size_t const size,
+                      struct zelda64_dma_entry const* entries, size_t const count) {
+    if (entries == NULL || data == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    if (count > size / ZELDA64_DMA_ENTRY_SIZE) {
+        return ZELDA64_OUT_OF_RANGE;
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        size_t const position = i * ZELDA64_DMA_ENTRY_SIZE;
+        struct zelda64_dma_entry const* entry = &entries[i];
+        zelda64_write_u32(&data[position + 0], entry->vrom_start);
+        zelda64_write_u32(&data[position + 4], entry->vrom_end);
+        zelda64_write_u32(&data[position + 8], entry->rom_start);
+        zelda64_write_u32(&data[position + 12], entry->rom_end);
+    }
+
+    return ZELDA64_OK;
+}
+
 enum zelda64_dma_kind zelda64_dma_entry_kind(struct zelda64_dma_entry const* entry) {
     assert(entry != NULL);
 

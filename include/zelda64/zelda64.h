@@ -241,6 +241,10 @@ ZELDA64_API enum zelda64_result
 zelda64_read_dmadata(struct zelda64_dma_entry* entries, size_t count,
                      uint8_t const* data, size_t size);
 
+ZELDA64_API enum zelda64_result
+zelda64_write_dmadata(uint8_t* data, size_t size,
+                      struct zelda64_dma_entry const* entries, size_t count);
+
 ZELDA64_API enum zelda64_dma_kind
 zelda64_dma_entry_kind(struct zelda64_dma_entry const* entry);
 

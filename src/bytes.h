@@ -43,4 +43,14 @@ zelda64_read_u32(uint8_t const* p) {
     // @formatter:on
 }
 
+static inline void
+zelda64_write_u32(uint8_t* p, uint32_t const n) {
+    // @formatter:off
+    p[0] = (uint8_t) (n >> 24);
+    p[1] = (uint8_t) (n >> 16);
+    p[2] = (uint8_t) (n >> 8);
+    p[3] = (uint8_t) (n);
+    // @formatter:on
+}
+
 #endif //LIBZELDA64_BYTES_H
