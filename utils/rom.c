@@ -136,6 +136,11 @@ cleanup_makerom:
 
 
 enum zelda64_result zelda64_open_rom(struct zelda64_rom* rom, FILE* file) {
+    if (rom == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    *rom = (struct zelda64_rom){0};
+
     enum zelda64_result result = find_dma_table(file, &rom->dma_info);
     if (result != ZELDA64_OK) {
         return result;
@@ -163,9 +168,11 @@ enum zelda64_result zelda64_open_rom(struct zelda64_rom* rom, FILE* file) {
 
 cleanup_dma_table:
     free(rom->dma);
+    rom->dma = NULL;
     return result;
 }
 
 void zelda64_close_rom(struct zelda64_rom* rom) {
     free(rom->dma);
+    rom->dma = NULL;
 }
