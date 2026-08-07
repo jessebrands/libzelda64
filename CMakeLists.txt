@@ -18,6 +18,11 @@ set(CMAKE_C_EXTENSIONS OFF)
 option(LIBZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
 option(LIBZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
 
+#
+# Program settings
+#
+option(ZELDA64_BUILD_ZELDA64 "Enable building zelda64 program" ${PROJECT_IS_TOP_LEVEL})
+
 set(LIBZELDA64_PUBLIC_HEADERS
         include/zelda64/zelda64.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h)
@@ -100,4 +105,23 @@ if (LIBZELDA64_BUILD_STATIC)
             DEBUG_POSTFIX "d")
 
     zelda64_enable_warnings(zelda64_static)
+endif ()
+
+if (ZELDA64_BUILD_ZELDA64)
+    add_executable(zelda64
+            src/main.c)
+
+    # Select a library to link against:
+    if (LIBZELDA64_BUILD_STATIC)
+        target_link_libraries(zelda64 PRIVATE zelda64::zelda64_static)
+    elseif (LIBZELDA64_BUILD_SHARED)
+        target_link_libraries(zelda64 PRIVATE zelda64::zelda64)
+    else ()
+        message(FATAL_ERROR "Cannot build zelda64_bin without zelda64 or zelda64_static")
+    endif ()
+
+    set_target_properties(zelda64 PROPERTIES
+            OUTPUT_NAME "zelda64")
+
+    zelda64_enable_warnings(zelda64)
 endif ()
