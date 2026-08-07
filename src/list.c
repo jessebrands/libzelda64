@@ -32,6 +32,7 @@ kind_string(enum zelda64_dma_kind const kind) {
         case ZELDA64_DMA_UNCOMPRESSED: return "uncompressed";
         case ZELDA64_DMA_COMPRESSED: return "compressed";
     }
+    return "unknown";
 }
 
 enum zelda64_result
@@ -56,45 +57,34 @@ list_dmadata(uint8_t const* rom, size_t const rom_size, bool verbose) {
         goto cleanup_entries;
     }
 
-    // Read the ROM info now that we have the MAKEROM
-    struct zelda64_rom_info rom_info;
-    uint8_t const* makerom = &rom[entries[0].vrom_start];
-    size_t const makerom_size = entries[0].vrom_end - entries[0].vrom_start;
-    result = zelda64_read_rom_info(&rom_info, makerom, makerom_size);
-    if (result != ZELDA64_OK) {
-        goto cleanup_entries;
-    }
-
     // Iterate over the entries in the list.
     int file_type[] = {
         0, 0, 0, 0,
     };
 
-
-    fprintf(stdout, "      %-8s  %-8s  %-8s  %-8s  %-8s\n", "vstart", "vend", "start", "end", "kind");
+    if (verbose) {
+        fprintf(stdout, "      %-8s  %-8s  %-8s  %-8s  %-8s\n", "vstart", "vend", "start", "end", "kind");
+    }
     for (size_t i = 0; i < dmadata_info.count; ++i) {
         enum zelda64_dma_kind const kind = zelda64_dma_entry_kind(&entries[i]);
-
-        fprintf(stdout, "%04" PRIXMAX"  %08X  %08X  %08X  %08X  %s\n", i,
-                entries[i].vrom_start, entries[i].vrom_end,
-                entries[i].rom_start, entries[i].rom_end,
-                kind_string(kind));
-
+        if (verbose) {
+            fprintf(stdout, "%04zX  %08X  %08X  %08X  %08X  %s\n", i,
+                    entries[i].vrom_start, entries[i].vrom_end,
+                    entries[i].rom_start, entries[i].rom_end,
+                    kind_string(kind));
+        }
         file_type[kind]++;
     }
-
-    fprintf(stdout, "\n");
-
-
     if (verbose) {
-        fprintf(stdout, "%zu entries: %d compressed, %d uncompressed, %d empty, %d deleted\n\n",
-                dmadata_info.count,
-                file_type[ZELDA64_DMA_COMPRESSED],
-                file_type[ZELDA64_DMA_UNCOMPRESSED],
-                file_type[ZELDA64_DMA_EMPTY],
-                file_type[ZELDA64_DMA_DELETED]);
+        fprintf(stdout, "\n");
     }
 
+    fprintf(stdout, "%zu entries: %d compressed, %d uncompressed, %d empty, %d deleted\n\n",
+            dmadata_info.count,
+            file_type[ZELDA64_DMA_COMPRESSED],
+            file_type[ZELDA64_DMA_UNCOMPRESSED],
+            file_type[ZELDA64_DMA_EMPTY],
+            file_type[ZELDA64_DMA_DELETED]);
 
 cleanup_entries:
     free(entries);
