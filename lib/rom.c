@@ -119,3 +119,156 @@ zelda64_cic_name(enum zelda64_cic const cic) {
     }
     return "unknown";
 }
+
+static uint32_t zelda64_cic_seed(enum zelda64_cic const cic) {
+    switch (cic) {
+        case ZELDA64_CIC_6101:
+        case ZELDA64_CIC_6102:
+            return 0xF8CA4DDC;
+
+        case ZELDA64_CIC_6103:
+            return 0xA3886759;
+
+        case ZELDA64_CIC_6105:
+            return 0xDF26F436;
+
+        case ZELDA64_CIC_6106:
+            return 0x1FEA617A;
+
+        case ZELDA64_CIC_UNKNOWN:
+            break;
+    }
+
+    return 0;
+}
+
+enum zelda64_result
+zelda64_cic_check_code_init(enum zelda64_cic const cic,
+                            uint8_t const* ipl, size_t const ipl_size,
+                            struct zelda64_check_code_state* state) {
+    if (state == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    if (cic == ZELDA64_CIC_6105 && (ipl == NULL || ipl_size < 0x0810)) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+
+    // Get initial seed for the CIC-NUS chip.
+    uint32_t const seed = zelda64_cic_seed(cic);
+    if (seed == 0) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+
+    *state = (struct zelda64_check_code_state){
+        .cic = cic,
+        .acc = {seed, seed, seed, seed, seed, seed},
+        .offset = 0x1000,
+        .ipl = ipl,
+        .ipl_size = ipl_size
+    };
+
+    return ZELDA64_OK;
+}
+
+static inline uint32_t rotate32(uint32_t const a, unsigned const b) {
+    return a << b | a >> ((32 - b) & 31);
+}
+
+enum zelda64_result
+zelda64_cic_check_code(struct zelda64_check_code_state* state,
+                       uint8_t const* data, size_t const size) {
+    // If our arguments don't make sense, bail.
+    if (state == NULL || data == NULL || size % 4 != 0) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+
+    // If we're dealing with a CIC-NUS-6105, we'll need the MAKEROM.
+    if (state->cic == ZELDA64_CIC_6105
+        && (state->ipl == NULL || state->ipl_size < 0x0810)) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+
+    size_t const start = state->offset;
+    size_t i = 0; // Position in current data buffer.
+    while (state->offset < 0x101000 && i + 4 <= size) {
+        uint32_t const d = zelda64_read_u32(&data[i]);
+
+        if (state->acc[5] + d < state->acc[5]) {
+            state->acc[3]++;
+        }
+
+        state->acc[5] += d;
+        state->acc[2] ^= d;
+
+        uint32_t const r = rotate32(d, (d & 0x1F));
+        state->acc[4] += r;
+
+        if (state->acc[1] > d) {
+            state->acc[1] ^= r;
+        } else {
+            state->acc[1] ^= state->acc[5] ^ d;
+        }
+
+        if (state->cic == ZELDA64_CIC_6105) {
+            size_t const makerom_offset = 0x0710 + ((start + i) & 0xFF);
+            uint32_t const b = zelda64_read_u32(&state->ipl[makerom_offset]);
+            state->acc[0] += b ^ d;
+        } else {
+            state->acc[0] += state->acc[4] ^ d;
+        }
+
+        i += 4;
+        state->offset += 4;
+    }
+
+    return ZELDA64_OK;
+}
+
+uint64_t
+zelda64_cic_check_code_end(struct zelda64_check_code_state const* state) {
+    switch (state->cic) {
+        case ZELDA64_CIC_6103:
+            return ((uint64_t) ((state->acc[5] ^ state->acc[3]) + state->acc[2]) << 32)
+                   | ((uint64_t) ((state->acc[4] ^ state->acc[1]) + state->acc[0]));
+
+
+        case ZELDA64_CIC_6106:
+            return ((uint64_t) ((state->acc[5] * state->acc[3]) + state->acc[2]) << 32)
+                   | ((uint64_t) ((state->acc[4] * state->acc[1]) + state->acc[0]));
+
+        default:
+            return ((uint64_t) (state->acc[5] ^ state->acc[3] ^ state->acc[2]) << 32)
+                   | ((uint64_t) (state->acc[4] ^ state->acc[1] ^ state->acc[0]));
+    }
+}
+
+enum zelda64_result
+zelda64_rom_check_code(uint8_t const* rom, size_t const rom_size, uint64_t* check_code) {
+    if (rom == NULL || rom_size < 0x101000 || check_code == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+
+    *check_code = 0;
+
+    // Calculate the CIC-NUS chip used by the ROM (should always be 6105)
+    uint32_t const crc = zelda64_crc32(0, &rom[CIC_DETECT_START], CIC_DETECT_END - CIC_DETECT_START);
+    enum zelda64_cic const cic = cic_for_crc32(crc);
+
+    uint8_t const* ipl = &rom[ZELDA64_ROM_HEADER_SIZE];
+    size_t const ipl_size = 0x0FC0;
+
+    // Initialize check code algorithm state.
+    struct zelda64_check_code_state state = {0};
+    enum zelda64_result result = zelda64_cic_check_code_init(cic, ipl, ipl_size, &state);
+    if (result != ZELDA64_OK) {
+        return result;
+    }
+
+    result = zelda64_cic_check_code(&state, &rom[state.offset], 0x101000 - state.offset);
+    if (result != ZELDA64_OK) {
+        return result;
+    }
+
+    *check_code = zelda64_cic_check_code_end(&state);
+    return ZELDA64_OK;
+}

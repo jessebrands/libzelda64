@@ -99,6 +99,14 @@ struct zelda64_rom_info {
     uint32_t entrypoint;
 };
 
+struct zelda64_check_code_state {
+    enum zelda64_cic cic;
+    uint32_t acc[6];
+    size_t offset;
+    uint8_t const* ipl;
+    size_t ipl_size;
+};
+
 struct zelda64_dmadata_info {
     uint32_t offset; // physical offset of DMADATA in ROM
     uint32_t size; // size in bytes
@@ -126,8 +134,53 @@ zelda64_read_rom_header(struct zelda64_rom_header* header, uint8_t const* data, 
 ZELDA64_API enum zelda64_result
 zelda64_read_rom_info(struct zelda64_rom_info* info, uint8_t const* data, size_t size);
 
+/*!
+ * \brief Sets initial state for the CIC check code algorithm.
+ * \param state Check code algorithm state.
+ * \return ZELDA64_OK on success.
+ * \note This is part of the streaming interface.
+ * \see zelda64_cic_check_code, zelda64_cic_check_code_end
+ */
+ZELDA64_API enum zelda64_result
+zelda64_cic_check_code_init(enum zelda64_cic cic,
+                            uint8_t const* ipl, size_t ipl_size,
+                            struct zelda64_check_code_state* state);
+
+/*!
+ * \brief Calculates state for the CIC check code algorithm.
+ * \param state Check code algorithm state.
+ * \param data Data to operate on.
+ * \param size Size of data in bytes.
+ * \return ZELDA64_OK on success.
+ * \note This is part of the streaming API.
+ * \see zelda64_cic_check_code_init, zelda64_cic_check_code_end
+ */
+ZELDA64_API enum zelda64_result
+zelda64_cic_check_code(struct zelda64_check_code_state* state,
+                       uint8_t const* data, size_t size);
+
+/*!
+ * \brief Mixes the calculation state into a final check code.
+ * \param state Check code algorithm state.
+ * \return Check code for the data.
+ * \note This is part of the streaming API.
+ * \see zelda64_cic_check_code_init, zelda64_cic_check_code
+ */
+ZELDA64_API uint64_t
+zelda64_cic_check_code_end(struct zelda64_check_code_state const* state);
+
 ZELDA64_API char const*
 zelda64_cic_name(enum zelda64_cic cic);
+
+/*!
+ * \brief Calculates the CIC-NUS check code for a ROM.
+ * \param rom The ROM.
+ * \param rom_size Size of the ROM.
+ * \param check_code A pointer that receives the calculated check code.
+ * \return \ref ZELDA64_OK on success.
+ */
+ZELDA64_API enum zelda64_result
+zelda64_rom_check_code(uint8_t const* rom, size_t rom_size,  uint64_t* check_code);
 
 /*!
  * \brief Searches for the start of DMADATA in a buffer.
@@ -196,7 +249,7 @@ zelda64_dma_entry_extent(struct zelda64_dma_entry const* entry,
                          uint32_t* offset, uint32_t* size);
 
 #if defined __cplusplus
-extern "C" {
+}
 #endif
 
 #endif //LIBZELDA64_ZELDA64_H
