@@ -52,6 +52,9 @@ enum zelda64_result {
     ZELDA64_INVALID_PARAMETER = -1,
     ZELDA64_OUT_OF_RANGE = -2,
     ZELDA64_NO_DMADATA = -3,
+    ZELDA64_MEMORY_ERROR = -4,
+    ZELDA64_IO_ERROR = -100,
+    ZELDA64_IO_FILE_NOT_FOUND = -101,
 };
 
 enum zelda64_compression_level {
