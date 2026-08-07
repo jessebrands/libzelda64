@@ -28,6 +28,7 @@ set(ZELDA64_PUBLIC_HEADERS
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h)
 
 set(ZELDA64_PRIVATE_HEADERS
+        src/bytes.h
         src/crc32.h
         src/rom.h)
 
