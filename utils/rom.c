@@ -57,7 +57,7 @@ find_dma_table(FILE* f, struct zelda64_dmadata_info* info) {
 
         while (seek_pos + 16 <= got) {
             if (zelda64_find_dmadata_start(chunk, got, &seek_pos) != ZELDA64_OK) {
-                continue;
+                break;
             }
 
             size_t const dma_start = offset + seek_pos;

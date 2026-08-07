@@ -76,7 +76,7 @@ parse_options(struct decompress_options* opts, int const argc, char const* const
             exit(EXIT_FAILURE);
         }
 
-        if (arg[1] != '\0' && arg[1] == '-') {
+        if (arg[1] == '-') {
             char const* opt = &arg[2];
 
             if (strcmp(opt, "version") == 0) {
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
 
     if (opts.verbose) {
         fprintf(stdout,
-                "decompress: found DMADATA at offset 0x%X (%zu entries)\n",
+                "decompress: found DMADATA at offset 0x%" PRIX32 " (%zu entries)\n",
                 rom.dma_info.offset, rom.dma_info.count);
         fprintf(stdout, "decompress: ROM is %.4s version %d\n",
                 rom.info.header.game_code, rom.info.header.version + 1);

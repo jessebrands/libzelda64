@@ -44,7 +44,7 @@
 extern "C" {
 #endif
 
-#define ZELDA64_ROM_HEADER_SIZE     0x40
+#define ZELDA64_ROM_HEADER_SIZE     0x40u
 #define ZELDA64_DMA_ENTRY_SIZE      0x10u
 
 enum zelda64_result {
