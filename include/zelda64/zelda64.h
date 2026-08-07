@@ -193,4 +193,8 @@ ZELDA64_API enum zelda64_result
 zelda64_dma_entry_extent(struct zelda64_dma_entry const* entry,
                          uint32_t* offset, uint32_t* size);
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 #endif //ZELDA64_ZELDA64_H
