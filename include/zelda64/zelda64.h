@@ -167,6 +167,21 @@ ZELDA64_API enum zelda64_result
 zelda64_read_dmadata_info(struct zelda64_dmadata_info* info, size_t offset, size_t rom_size,
                           uint8_t const* data, size_t size);
 
+/*!
+ * \brief Finds DMADATA info inside a ROM.
+ *
+ * This function tries to locate the DMADATA inside a ROM and returns
+ * information about the location and size of DMADATA when found. This function
+ * operates on whole ROMs.
+ *
+ * \param info A pointer to a \ref zelda64_dmadata_info that receives
+ * \param rom Buffer containing the ROM data.
+ * \param rom_size Size of the ROM data.
+ * \return ZELDA64_OK if found.
+ */
+ZELDA64_API enum zelda64_result
+zelda64_find_dmadata(struct zelda64_dmadata_info* info, uint8_t const* rom, size_t rom_size);
+
 ZELDA64_API enum zelda64_result
 zelda64_read_dmadata(struct zelda64_dma_entry* entries, size_t count,
                      uint8_t const* data, size_t size);

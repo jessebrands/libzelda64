@@ -136,6 +136,32 @@ zelda64_read_dmadata_info(struct zelda64_dmadata_info* info, size_t const offset
 }
 
 enum zelda64_result
+zelda64_find_dmadata(struct zelda64_dmadata_info* info, uint8_t const* rom, size_t const rom_size) {
+    if (info == NULL || rom == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+
+    *info = (struct zelda64_dmadata_info){0};
+
+    size_t dma_start = 0;
+    enum zelda64_result result = ZELDA64_NO_DMADATA;
+
+    while ((result = zelda64_find_dmadata_start(rom, rom_size, &dma_start)) == ZELDA64_OK) {
+        uint8_t const* dmadata = &rom[dma_start];
+        size_t const dmadata_size = rom_size - dma_start;
+
+        result = zelda64_read_dmadata_info(info, dma_start, rom_size, dmadata, dmadata_size);
+        if (result == ZELDA64_OK) {
+            break;
+        }
+
+        dma_start += ZELDA64_DMA_ENTRY_SIZE;
+    }
+
+    return result;
+}
+
+enum zelda64_result
 zelda64_read_dmadata(struct zelda64_dma_entry* entries, size_t const count,
                      uint8_t const* data, size_t const size) {
     if (entries == NULL || data == NULL) {
