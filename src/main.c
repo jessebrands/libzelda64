@@ -31,13 +31,16 @@
 
 enum zelda64_option {
     OPT_INFO = 'i',
+    OPT_LIST = 'l',
     OPT_VERBOSE = 'v',
     OPT_VERSION = 256,
     OPT_HELP = 257,
 };
 
-enum zelda64_action {
-    ACTION_INFO = 1u << 0,
+enum zelda64_command {
+    COMMAND_NONE = 0,
+    COMMAND_INFO,
+    COMMAND_LIST,
 };
 
 enum zelda64_parse_result {
@@ -48,6 +51,8 @@ enum zelda64_parse_result {
 
 struct zelda64_options {
     bool verbose;
+    enum zelda64_command command;
+
     char const* in_filename;
     unsigned int actions;
 };
@@ -73,22 +78,25 @@ print_version(FILE* f) {
 }
 
 static bool
-set_action(struct zelda64_options* options, enum zelda64_action const action) {
-    if (options->actions != 0 && !(options->actions & action)) {
+set_command(struct zelda64_options* options, enum zelda64_command const command) {
+    if (options->command != COMMAND_NONE) {
         return false;
     }
-    options->actions |= action;
+    options->command = command;
     return true;
 }
 
 static enum zelda64_parse_result
-parse_options(struct zelda64_options* options, int argc, char** argv) {
-    bool show_help = false;
-    bool show_version = false;
+usage_error(char const* const message) {
+    fprintf(stderr, "zelda64: error: %s\n", message);
+    return PARSE_USAGE;
+}
 
+static enum zelda64_parse_result
+parse_options(struct zelda64_options* options, int argc, char** argv) {
     struct option const long_options[] = {
         {"info", no_argument, NULL, OPT_INFO},
-
+        {"list", no_argument, NULL, OPT_LIST},
         {"verbose", no_argument, NULL, OPT_VERBOSE},
         {"help", no_argument, NULL, OPT_HELP},
         {"version", no_argument, NULL, OPT_VERSION},
@@ -105,18 +113,25 @@ parse_options(struct zelda64_options* options, int argc, char** argv) {
                 break;
 
             case OPT_HELP:
-                show_help = true;
-                break;
+                show_usage(stdout);
+                return PARSE_DONE;
 
             case OPT_VERSION:
-                show_version = true;
-                break;
+                print_version(stdout);
+                return PARSE_DONE;
 
             case OPT_INFO:
-                if (!set_action(options, ACTION_INFO)) {
-                    return EXIT_USAGE;
+                if (!set_command(options, COMMAND_INFO)) {
+                    return usage_error("only one command may be given");
                 }
                 break;
+
+            case OPT_LIST:
+                if (!set_command(options, COMMAND_LIST)) {
+                    return usage_error("only one command may be given");
+                }
+                break;
+
 
             case '?':
                 if (optopt != 0) {
@@ -131,26 +146,20 @@ parse_options(struct zelda64_options* options, int argc, char** argv) {
         }
     }
 
-    if (show_help) {
-        show_usage(stdout);
-        return PARSE_DONE;
-    }
+    int const arguments = argc - optind;
 
-    if (show_version) {
-        print_version(stdout);
-        return PARSE_DONE;
-    }
-
-    while (optind < argc) {
-        if (options->in_filename == NULL) {
-            options->in_filename = argv[optind++];
-            continue;
+    if (options->command != COMMAND_NONE) {
+        if (arguments < 1) {
+            return usage_error("no input file given");
         }
-        fprintf(stderr, "zelda64: error: too many arguments\n");
-        return EXIT_USAGE;
+        if (arguments > 1) {
+            return usage_error("too many arguments");
+        }
+        options->in_filename = argv[optind];
+        return PARSE_OK;
     }
 
-    return PARSE_OK;
+    return usage_error("no command or stage(s) given");
 }
 
 int main(int argc, char** argv) {
