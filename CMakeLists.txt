@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21...3.31)
-project(zelda64
+project(libzelda64
         VERSION 0.1.0
         DESCRIPTION "Nintendo 64 Zelda ROM library"
         HOMEPAGE_URL "https://github.com/jessebrands/zelda64"
@@ -15,28 +15,23 @@ set(CMAKE_C_EXTENSIONS OFF)
 #
 # Library settings
 #
-option(LIBZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
-option(LIBZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
+option(ZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
+option(ZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
 
-#
-# Program settings
-#
-option(ZELDA64_BUILD_ZELDA64 "Enable building zelda64 program" ${PROJECT_IS_TOP_LEVEL})
-
-set(LIBZELDA64_PUBLIC_HEADERS
+set(ZELDA64_PUBLIC_HEADERS
         include/zelda64/zelda64.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h)
 
-set(LIBZELDA64_PRIVATE_HEADERS
-        lib/bytes.h
-        lib/crc32.h
-        lib/rom.h)
+set(ZELDA64_PRIVATE_HEADERS
+        src/bytes.h
+        src/crc32.h
+        src/rom.h)
 
-set(LIBZELDA64_SOURCES
-        lib/crc32.c
-        lib/dma.c
-        lib/rom.c
-        lib/zelda64.c)
+set(ZELDA64_SOURCES
+        src/crc32.c
+        src/dma.c
+        src/rom.c
+        src/zelda64.c)
 
 function(zelda64_enable_warnings target)
     if (MSVC)
@@ -62,11 +57,11 @@ configure_file(
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h
         @ONLY)
 
-if (LIBZELDA64_BUILD_SHARED)
+if (ZELDA64_BUILD_SHARED)
     add_library(zelda64_shared SHARED
-            ${LIBZELDA64_SOURCES}
-            ${LIBZELDA64_PUBLIC_HEADERS}
-            ${LIBZELDA64_PRIVATE_HEADERS})
+            ${ZELDA64_SOURCES}
+            ${ZELDA64_PUBLIC_HEADERS}
+            ${ZELDA64_PRIVATE_HEADERS})
 
     add_library(zelda64::zelda64 ALIAS zelda64_shared)
 
@@ -86,11 +81,11 @@ if (LIBZELDA64_BUILD_SHARED)
     zelda64_enable_warnings(zelda64_shared)
 endif ()
 
-if (LIBZELDA64_BUILD_STATIC)
+if (ZELDA64_BUILD_STATIC)
     add_library(zelda64_static STATIC
-            ${LIBZELDA64_SOURCES}
-            ${LIBZELDA64_PUBLIC_HEADERS}
-            ${LIBZELDA64_PRIVATE_HEADERS})
+            ${ZELDA64_SOURCES}
+            ${ZELDA64_PUBLIC_HEADERS}
+            ${ZELDA64_PRIVATE_HEADERS})
 
     add_library(zelda64::zelda64_static ALIAS zelda64_static)
 
@@ -105,26 +100,4 @@ if (LIBZELDA64_BUILD_STATIC)
             DEBUG_POSTFIX "d")
 
     zelda64_enable_warnings(zelda64_static)
-endif ()
-
-if (ZELDA64_BUILD_ZELDA64)
-    add_executable(zelda64
-            src/file.c
-            src/info.c
-            src/list.c
-            src/main.c)
-
-    # Select a library to link against:
-    if (LIBZELDA64_BUILD_STATIC)
-        target_link_libraries(zelda64 PRIVATE zelda64::zelda64_static)
-    elseif (LIBZELDA64_BUILD_SHARED)
-        target_link_libraries(zelda64 PRIVATE zelda64::zelda64)
-    else ()
-        message(FATAL_ERROR "Cannot build zelda64_bin without zelda64 or zelda64_static")
-    endif ()
-
-    set_target_properties(zelda64 PROPERTIES
-            OUTPUT_NAME "zelda64")
-
-    zelda64_enable_warnings(zelda64)
 endif ()
