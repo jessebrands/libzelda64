@@ -15,23 +15,23 @@ set(CMAKE_C_EXTENSIONS OFF)
 #
 # Library settings
 #
-option(ZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
-option(ZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
+option(LIBZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
+option(LIBZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
 
-set(ZELDA64_PUBLIC_HEADERS
+set(LIBZELDA64_PUBLIC_HEADERS
         include/zelda64/zelda64.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h)
 
-set(ZELDA64_PRIVATE_HEADERS
-        src/bytes.h
-        src/crc32.h
-        src/rom.h)
+set(LIBZELDA64_PRIVATE_HEADERS
+        lib/bytes.h
+        lib/crc32.h
+        lib/rom.h)
 
-set(ZELDA64_SOURCES
-        src/crc32.c
-        src/dma.c
-        src/rom.c
-        src/zelda64.c)
+set(LIBZELDA64_SOURCES
+        lib/crc32.c
+        lib/dma.c
+        lib/rom.c
+        lib/zelda64.c)
 
 function(zelda64_enable_warnings target)
     if (MSVC)
@@ -57,11 +57,11 @@ configure_file(
         ${CMAKE_CURRENT_BINARY_DIR}/include/zelda64/config.h
         @ONLY)
 
-if (ZELDA64_BUILD_SHARED)
+if (LIBZELDA64_BUILD_SHARED)
     add_library(zelda64 SHARED
-            ${ZELDA64_SOURCES}
-            ${ZELDA64_PUBLIC_HEADERS}
-            ${ZELDA64_PRIVATE_HEADERS})
+            ${LIBZELDA64_SOURCES}
+            ${LIBZELDA64_PUBLIC_HEADERS}
+            ${LIBZELDA64_PRIVATE_HEADERS})
 
     add_library(zelda64::zelda64 ALIAS zelda64)
 
@@ -81,11 +81,11 @@ if (ZELDA64_BUILD_SHARED)
     zelda64_enable_warnings(zelda64)
 endif ()
 
-if (ZELDA64_BUILD_STATIC OR ZELDA64_BUILD_UTILITIES)
+if (LIBZELDA64_BUILD_STATIC)
     add_library(zelda64_static STATIC
-            ${ZELDA64_SOURCES}
-            ${ZELDA64_PUBLIC_HEADERS}
-            ${ZELDA64_PRIVATE_HEADERS})
+            ${LIBZELDA64_SOURCES}
+            ${LIBZELDA64_PUBLIC_HEADERS}
+            ${LIBZELDA64_PRIVATE_HEADERS})
 
     add_library(zelda64::zelda64_static ALIAS zelda64_static)
 
