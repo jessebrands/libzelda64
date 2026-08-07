@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21...3.31)
-project(libzelda64
+project(zelda64
         VERSION 0.1.0
         DESCRIPTION "Nintendo 64 Zelda ROM library"
         HOMEPAGE_URL "https://github.com/jessebrands/zelda64"
