@@ -58,27 +58,27 @@ configure_file(
         @ONLY)
 
 if (LIBZELDA64_BUILD_SHARED)
-    add_library(zelda64 SHARED
+    add_library(zelda64_shared SHARED
             ${LIBZELDA64_SOURCES}
             ${LIBZELDA64_PUBLIC_HEADERS}
             ${LIBZELDA64_PRIVATE_HEADERS})
 
-    add_library(zelda64::zelda64 ALIAS zelda64)
+    add_library(zelda64::zelda64 ALIAS zelda64_shared)
 
-    target_include_directories(zelda64
+    target_include_directories(zelda64_shared
             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
-    target_compile_definitions(zelda64 PRIVATE ZELDA64_SHARED)
+    target_compile_definitions(zelda64_shared PRIVATE ZELDA64_SHARED)
 
-    set_target_properties(zelda64 PROPERTIES
+    set_target_properties(zelda64_shared PROPERTIES
             OUTPUT_NAME "zelda64"
             DEBUG_POSTFIX "d"
             C_VISIBILITY_PRESET hidden
             VERSION ${PROJECT_VERSION}
             SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 
-    zelda64_enable_warnings(zelda64)
+    zelda64_enable_warnings(zelda64_shared)
 endif ()
 
 if (LIBZELDA64_BUILD_STATIC)
