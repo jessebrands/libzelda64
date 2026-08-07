@@ -28,7 +28,6 @@ char const* zelda64_result_string(enum zelda64_result const result) {
         case ZELDA64_NO_DMADATA: return "ROM has no DMADATA";
         case ZELDA64_MEMORY_ERROR: return "out of memory";
         case ZELDA64_IO_ERROR: return "i/o error";
-        case ZELDA64_IO_FILE_NOT_FOUND: return "file not found";
     }
     return "unknown";
 }
