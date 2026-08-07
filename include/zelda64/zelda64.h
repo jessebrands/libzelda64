@@ -180,7 +180,7 @@ zelda64_cic_name(enum zelda64_cic cic);
  * \return \ref ZELDA64_OK on success.
  */
 ZELDA64_API enum zelda64_result
-zelda64_rom_check_code(uint8_t const* rom, size_t rom_size,  uint64_t* check_code);
+zelda64_rom_check_code(uint8_t const* rom, size_t rom_size, uint64_t* check_code);
 
 /*!
  * \brief Searches for the start of DMADATA in a buffer.
