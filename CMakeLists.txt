@@ -109,8 +109,10 @@ endif ()
 
 if (ZELDA64_BUILD_ZELDA64)
     add_executable(zelda64
-            src/main.c
-            src/info.c)
+            src/file.c
+            src/info.c
+            src/list.c
+            src/main.c)
 
     # Select a library to link against:
     if (LIBZELDA64_BUILD_STATIC)

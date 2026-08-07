@@ -24,30 +24,28 @@
 
 #include <zelda64/zelda64.h>
 
-#include "actions.h"
+#include "zelda64.h"
 
-enum zelda64_action_result
-action_rom_info(uint8_t const* rom, size_t const rom_size) {
+enum zelda64_result
+display_rom_info(uint8_t const* rom, size_t const rom_size) {
     // Find the DMADATA location and size.
     struct zelda64_dmadata_info dmadata_info = {0};
     enum zelda64_result result = zelda64_find_dmadata(&dmadata_info, rom, rom_size);
     if (result != ZELDA64_OK) {
-        return (enum zelda64_action_result) result;
+        return result;
     }
-
 
     // Allocate a buffer large enough to hold the DMADATA in memory.
     struct zelda64_dma_entry* entries = calloc(dmadata_info.count, sizeof(*entries));
     if (entries == NULL) {
-        return ACTION_MEMORY_ERROR;
+        return ZELDA64_MEMORY_ERROR;
     }
 
     uint8_t const* dmadata = &rom[dmadata_info.offset];
     size_t const dmadata_size = dmadata_info.size;
     result = zelda64_read_dmadata(entries, dmadata_info.count, dmadata, dmadata_size);
     if (result != ZELDA64_OK) {
-        free(entries);
-        return (enum zelda64_action_result) result;
+        goto cleanup_entries;
     }
 
     // Read the ROM info now that we have the MAKEROM
@@ -56,8 +54,7 @@ action_rom_info(uint8_t const* rom, size_t const rom_size) {
     size_t const makerom_size = entries[0].vrom_end - entries[0].vrom_start;
     result = zelda64_read_rom_info(&rom_info, makerom, makerom_size);
     if (result != ZELDA64_OK) {
-        free(entries);
-        return (enum zelda64_action_result) result;
+        goto cleanup_entries;
     }
 
     fprintf(stdout, "%-20s%.20s\n", "title:", rom_info.header.title);
@@ -73,6 +70,7 @@ action_rom_info(uint8_t const* rom, size_t const rom_size) {
     fprintf(stdout, "%-20s%zu\n", "dmadata entries:", dmadata_info.count);
     fprintf(stdout, "\n");
 
+cleanup_entries:
     free(entries);
-    return ACTION_OK;
+    return result;
 }

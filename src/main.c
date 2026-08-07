@@ -25,13 +25,13 @@
 #include <getopt.h>
 #include <zelda64/zelda64.h>
 
-#include "actions.h"
+#include "zelda64.h"
 
 #define EXIT_USAGE 2
 
 enum zelda64_option {
     OPT_INFO = 'i',
-    OPT_LIST = 'l',
+    OPT_LIST = 't',
     OPT_VERBOSE = 'v',
     OPT_VERSION = 256,
     OPT_HELP = 257,
@@ -54,13 +54,16 @@ struct zelda64_options {
     enum zelda64_command command;
 
     char const* in_filename;
-    unsigned int actions;
 };
 
 static void
 show_usage(FILE* f) {
-    fprintf(f, "Usage: zelda64\n");
+    fprintf(f, "Usage: zelda64 rom\n");
     fprintf(f, "Manipulate Nintendo 64 Zelda ROMs.\n");
+    fprintf(f, "\n");
+    fprintf(f, "Commands:\n");
+    fprintf(f, "  -i, --info           output rom information\n");
+    fprintf(f, "  -t, --list           list rom DMADATA entries\n");
     fprintf(f, "\n");
     fprintf(f, "Options:\n");
     fprintf(f, "  -v, --verbose        write verbose messages\n");
@@ -106,7 +109,7 @@ parse_options(struct zelda64_options* options, int argc, char** argv) {
     int c;
 
     opterr = 0;
-    while ((c = getopt_long(argc, argv, ":vi", long_options, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, ":vit", long_options, NULL)) != -1) {
         switch (c) {
             case OPT_VERBOSE:
                 options->verbose = true;
@@ -162,6 +165,33 @@ parse_options(struct zelda64_options* options, int argc, char** argv) {
     return usage_error("no command or stage(s) given");
 }
 
+static enum zelda64_result
+do_action(struct zelda64_options const* options) {
+    uint8_t* rom = NULL;
+    size_t rom_size = 0;
+
+    enum zelda64_result result = open_rom(options->in_filename, &rom, &rom_size);
+    if (result != ZELDA64_OK) {
+        return result;
+    }
+
+    switch (options->command) {
+        case COMMAND_INFO:
+            result = display_rom_info(rom, rom_size);
+            break;
+
+        case COMMAND_LIST:
+            result = list_dmadata(rom, rom_size, options->verbose);
+            break;
+
+        default:
+            abort();
+    }
+
+    free(rom);
+    return result;
+}
+
 int main(int argc, char** argv) {
     struct zelda64_options options = {0};
     enum zelda64_parse_result const result = parse_options(&options, argc, argv);
@@ -177,21 +207,11 @@ int main(int argc, char** argv) {
             break;
     }
 
-    // Open file and get the file size.
-    FILE* in_file = fopen(options.in_filename, "rb");
-    fseek(in_file, 0, SEEK_END);
-    long const in_size = ftell(in_file);
-    rewind(in_file);
-
-    uint8_t* in_rom = malloc((size_t) in_size);
-    if (in_rom == NULL) {
-        return EXIT_FAILURE;
+    if (options.command != COMMAND_NONE) {
+        return do_action(&options) == ZELDA64_OK
+                   ? EXIT_SUCCESS
+                   : EXIT_FAILURE;
     }
 
-    fread(in_rom, 1, (size_t) in_size, in_file);
-
-    action_rom_info(in_rom, (size_t) in_size);
-
-    free(in_rom);
     return EXIT_SUCCESS;
 }
