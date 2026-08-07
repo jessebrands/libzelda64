@@ -18,6 +18,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 option(ZELDA64_BUILD_SHARED "Enable building libzelda64 as shared library" ON)
 option(ZELDA64_BUILD_STATIC "Enable building libzelda64 as static library" ON)
 option(ZELDA64_BUILD_UTILITIES "Enable building libzelda64-utils" ${PROJECT_IS_TOP_LEVEL})
+option(ZELDA64_BUILD_TESTS "Enable building tests" ${PROJECT_IS_TOP_LEVEL})
 
 set(ZELDA64_PUBLIC_HEADERS
         include/zelda64/zelda64.h
@@ -82,7 +83,7 @@ if (ZELDA64_BUILD_SHARED)
     zelda64_enable_warnings(zelda64_shared)
 endif ()
 
-if (ZELDA64_BUILD_STATIC)
+if (ZELDA64_BUILD_STATIC OR ZELDA64_BUILD_TESTS)
     add_library(zelda64_static STATIC
             ${ZELDA64_SOURCES}
             ${ZELDA64_PUBLIC_HEADERS}
@@ -103,6 +104,11 @@ if (ZELDA64_BUILD_STATIC)
     zelda64_enable_warnings(zelda64_static)
 endif ()
 
-if (ZELDA64_BUILD_UTILITIES)
+if (ZELDA64_BUILD_UTILITIES OR ZELDA64_BUILD_TESTS)
     add_subdirectory("utils")
+endif ()
+
+if (ZELDA64_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory("test")
 endif ()
