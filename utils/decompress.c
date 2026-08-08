@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
                 stream.avail_out = in_entry.vrom_end - in_entry.vrom_start;
 
                 enum yaz0_result const decomp_result = yaz0_decompress(&stream, YAZ0_FINISH);
-                if (decomp_result < YAZ0_OK) {
+                if (decomp_result != YAZ0_STREAM_END) {
                     fprintf(stderr, "zelda64: error: decompression failed: %s\n", yaz0_result_name(decomp_result));
                     yaz0_decompress_end(&stream);
                     goto cleanup_out_table;
