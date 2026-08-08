@@ -18,6 +18,7 @@
  * along with zelda64. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +26,7 @@
 #include <yaz0/yaz0.h>
 
 #include "rom.h"
+#include "log.h"
 
 #define CHUNK_COUNT 128
 #define CHUNK_SIZE  (CHUNK_COUNT * ZELDA64_DMA_ENTRY_SIZE)
@@ -180,16 +182,37 @@ zelda64_open_rom(char const* filename, struct zelda64_rom* rom) {
         goto cleanup_file;
     }
 
+    logf_info("Found DMADATA at offset 0x%08" PRIX32, rom->dma_info.offset);
+
     // Read the DMADATA to memory, we'll need it.
     result = read_dmadata(rom);
     if (result != ZELDA64_OK) {
         goto cleanup_file;
     }
 
+    size_t counts[4] = {0};
+
+    for (size_t i = 0; i < rom->dma_info.count; ++i) {
+        struct zelda64_dma_entry entry = rom->dma_table[i];
+        counts[zelda64_dma_entry_kind(&entry)]++;
+    }
+
+    logf_info("DMADATA has %zu entries: %zu uncompressed, %zu compressed, %zu empty, %zu deleted",
+              rom->dma_info.count,
+              counts[ZELDA64_DMA_UNCOMPRESSED],
+              counts[ZELDA64_DMA_COMPRESSED],
+              counts[ZELDA64_DMA_EMPTY],
+              counts[ZELDA64_DMA_DELETED]);
+
     result = read_rom_info(rom);
     if (result != ZELDA64_OK) {
         goto cleanup_table;
     }
+
+    logf_info("ROM is %.4s version %d (check code %016"PRIX64")",
+              rom->info.header.game_code,
+              rom->info.header.version + 1,
+              rom->info.header.check_code);
 
     return ZELDA64_OK;
 
