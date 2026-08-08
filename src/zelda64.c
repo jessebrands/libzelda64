@@ -27,6 +27,8 @@ char const* zelda64_result_string(enum zelda64_result const result) {
         case ZELDA64_OUT_OF_RANGE: return "out of range";
         case ZELDA64_NO_DMADATA: return "ROM has no DMADATA";
         case ZELDA64_MEMORY_ERROR: return "out of memory";
+        case ZELDA64_COMPRESSION_ERROR: return "compression error";
+        case ZELDA64_DECOMPRESSION_ERROR: return "decompression error";
         case ZELDA64_IO_ERROR: return "i/o error";
     }
     return "unknown";
