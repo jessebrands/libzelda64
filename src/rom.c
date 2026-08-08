@@ -83,6 +83,31 @@ zelda64_read_rom_header(struct zelda64_rom_header* header, uint8_t const* data, 
 }
 
 enum zelda64_result
+zelda64_write_rom_header(uint8_t* data, size_t const size, struct zelda64_rom_header const* header) {
+    if (header == NULL || data == NULL) {
+        return ZELDA64_INVALID_PARAMETER;
+    }
+    if (size < ZELDA64_ROM_HEADER_SIZE) {
+        return ZELDA64_OUT_OF_RANGE;
+    }
+    // @formatter:off
+    data[ROM_OFFSET_RESERVED0] = header->reserved0;
+    memcpy(&data[ROM_OFFSET_PI_CONFIG], header->pi_config, sizeof header->pi_config);
+    zelda64_write_u32(&data[ROM_OFFSET_CLOCK_RATE],        header->clock_rate);
+    zelda64_write_u32(&data[ROM_OFFSET_BOOT_ADDRESS],      header->boot_address);
+    zelda64_write_u32(&data[ROM_OFFSET_LIBULTRA_VERSION],  header->libultra_version);
+    zelda64_write_u32(&data[ROM_OFFSET_CHECK_CODE],        (uint32_t) (header->check_code >> 32));
+    zelda64_write_u32(&data[ROM_OFFSET_CHECK_CODE + 0x04], (uint32_t) (header->check_code));
+    memcpy(&data[ROM_OFFSET_RESERVED1], header->reserved1, sizeof header->reserved1);
+    memcpy(&data[ROM_OFFSET_TITLE],     header->title,     sizeof header->title);
+    memcpy(&data[ROM_OFFSET_RESERVED2], header->reserved2, sizeof header->reserved2);
+    memcpy(&data[ROM_OFFSET_GAME_CODE], header->game_code, sizeof header->game_code);
+    data[ROM_OFFSET_VERSION] = header->version;
+    // @formatter:on
+    return ZELDA64_OK;
+}
+
+enum zelda64_result
 zelda64_read_rom_info(struct zelda64_rom_info* info, uint8_t const* data, size_t const size) {
     if (info == NULL || data == NULL) {
         return ZELDA64_INVALID_PARAMETER;

@@ -130,6 +130,9 @@ zelda64_version_string(void);
 ZELDA64_API enum zelda64_result
 zelda64_read_rom_header(struct zelda64_rom_header* header, uint8_t const* data, size_t size);
 
+ZELDA64_API enum zelda64_result
+zelda64_write_rom_header(uint8_t* data, size_t size, struct zelda64_rom_header const* header);
+
 /*
  * Reads and decodes the Nintendo 64 IPL section of a ROM.
  */
