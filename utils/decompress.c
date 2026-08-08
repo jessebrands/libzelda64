@@ -144,15 +144,15 @@ int main(int argc, char** argv) {
 
         switch (kind) {
             case ZELDA64_DMA_EMPTY:
-                fprintf(stdout, "zelda64: skipping empty file %04lX\n", i);
+                fprintf(stdout, "zelda64: skipping empty file %04zX\n", i);
                 break;
 
             case ZELDA64_DMA_DELETED:
-                fprintf(stdout, "zelda64: skipping deleted file %04lX\n", i);
+                fprintf(stdout, "zelda64: skipping deleted file %04zX\n", i);
                 break;
 
             case ZELDA64_DMA_UNCOMPRESSED: {
-                fprintf(stdout, "zelda64: copying file %04lX\n", i);
+                fprintf(stdout, "zelda64: copying file %04zX\n", i);
 
                 uint32_t file_offset = 0;
                 uint32_t file_size = 0;
@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
             }
 
             case ZELDA64_DMA_COMPRESSED: {
-                fprintf(stdout, "zelda64: decompressing file %04lX\n", i);
+                fprintf(stdout, "zelda64: decompressing file %04zX\n", i);
 
                 uint32_t file_offset = 0;
                 uint32_t file_size = 0;
@@ -212,19 +212,40 @@ int main(int argc, char** argv) {
     }
 
     // Write out the fixed up table.
-    zelda64_write_dmadata(&out_rom[dma_info.offset], dma_info.size, out_table, dma_info.count);
+    result = zelda64_write_dmadata(&out_rom[dma_info.offset], dma_info.size, out_table, dma_info.count);
+    if (result != ZELDA64_OK) {
+        fprintf(stderr, "zelda64: error: failed to write DMADATA: %s\n", zelda64_result_string(result));
+        goto cleanup_out_table;
+    }
 
     // Recalculate the check code.
     uint64_t check_code;
-    zelda64_rom_check_code(out_rom, 0x4000000, &check_code);
+    result = zelda64_rom_check_code(out_rom, 0x4000000, &check_code);
+    if (result != ZELDA64_OK) {
+        fprintf(stderr, "zelda64: error: failed to calculate check code: %s\n", zelda64_result_string(result));
+        goto cleanup_out_table;
+    }
+
+    // TODO: This needs a library routine.
     zelda64_write_u64(&out_rom[0x10], check_code);
 
+    // Write memory resident ROM to file.
     FILE* out_file = fopen(out_filename, "wb");
-    fwrite(out_rom, 0x4000000, 1, out_file);
-    fclose(out_file);
+    if (out_file == NULL) {
+        fprintf(stderr, "zelda64: error: failed to open output ROM\n");
+        goto cleanup_out_table;
+    }
 
+    if (fwrite(out_rom, 1, 0x4000000, out_file) != 0x4000000) {
+        fprintf(stderr, "zelda64: error: did not write all bytes to output ROM file\n");
+        goto cleanup_out_file;
+    }
+
+    fclose(out_file);
     return EXIT_SUCCESS;
 
+cleanup_out_file:
+    fclose(out_file);
 cleanup_out_table:
     free(out_table);
 cleanup_out_rom:
